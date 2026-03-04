@@ -184,7 +184,6 @@ button{ cursor:pointer; }
     border-color: #007bff;
     box-shadow: 0 0 5px rgba(0,123,255,0.3);
 }
-
 /* BUTTON SECTION */
 .modal-buttons{
     display: flex;
@@ -201,6 +200,21 @@ button{ cursor:pointer; }
     font-size: 14px;
     cursor: pointer;
     transition: 0.3s ease;
+}
+
+.remindBtn {
+    background-color: #25D366; /* WhatsApp हरा */
+    color: white;
+    border-radius: 5px;
+    padding: 6px 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.remindBtn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 /* PRIMARY BUTTON */
@@ -313,6 +327,19 @@ button{ cursor:pointer; }
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
 }
+.tabBtn {
+    padding:8px 16px;
+    margin-right:10px;
+    border:none;
+    border-radius:5px;
+    background:#2196F3;
+    color:#fff;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+}
+.tabBtn:hover { background:#1976D2; }
+.tabBtn.active { background:#4CAF50; }
 </style>
 </head>
 
@@ -333,6 +360,9 @@ Date:
 <button class="clear" onclick="clearFilters()">Clear</button>
 <button class="billgenrate" onclick="window.open('BILL GERATER.html')">Generate New Bill</button>
 </div>
+<!-- TAB BUTTONS -->
+<button class="tabBtn active" onclick="switchTab('all', this)">All Bills</button>
+<button class="tabBtn" onclick="switchTab('unpaid', this)">Unpaid Bills</button>
 <div class="myhistory">
     <div class="income">
         <h3>Paid Bills: <span id="paidCount">0</span></h3>
@@ -411,101 +441,108 @@ function calculateTotal(){
     document.getElementById("editTotal").value = finalTotal;
 }
 
-function loadBills(){
+let currentTab = "all"; // Default tab
 
-let allBills = JSON.parse(localStorage.getItem("allBills")) || [];
+function switchTab(tab, btn){
+    currentTab = tab;
+    document.querySelectorAll(".tabBtn").forEach(b=>{
+        b.classList.remove("active");
+    });
+    btn.classList.add("active");
+    loadBills();
+}
 
-let searchMobile = document.getElementById("searchMobile").value.toLowerCase();
-let searchBill = document.getElementById("searchBill").value.toLowerCase();
-let dateFilter = document.getElementById("dateFilter").value;
+function loadBills() {
+    let allBills = JSON.parse(localStorage.getItem("allBills")) || [];
 
-let table = document.getElementById("billTable");
-table.innerHTML="";
+    let searchMobile = document.getElementById("searchMobile").value.toLowerCase();
+    let searchBill = document.getElementById("searchBill").value.toLowerCase();
+    let dateFilter = document.getElementById("dateFilter").value;
 
-let dailyIncome = 0;
-let monthlyIncome = 0;
-let totalIncome = 0;
+    let table = document.getElementById("billTable");
+    table.innerHTML = "";
 
-let paidCount = 0;
-let unpaidCount = 0;
-let cashTotal = 0;
-let upiTotal = 0;
+    let dailyIncome = 0;
+    let monthlyIncome = 0;
+    let totalIncome = 0;
 
-let today = new Date();
-let todayString = today.toISOString().split("T")[0];
+    let paidCount = 0;
+    let unpaidCount = 0;
+    let cashTotal = 0;
+    let upiTotal = 0;
 
-allBills.forEach((bill,index)=>{
+    let today = new Date();
+    let todayString = today.toISOString().split("T")[0];
 
-    let billDateObj = new Date(bill.date);
-    let billDateString = billDateObj.toISOString().split("T")[0];
+    allBills.forEach((bill, index) => {
+        let billDateObj = new Date(bill.date);
+        let billDateString = billDateObj.toISOString().split("T")[0];
 
-    // ===== Income Calculation (Only Once) =====
-    if(bill.status === "Paid"){
+        // ===== Tab Filter =====
+        if (currentTab === "unpaid" && bill.status === "Paid") return;
 
-        let amount = parseInt(bill.total) || 0;
-
-        paidCount++;
-        totalIncome += amount;
-
-        if(bill.paymentMode === "Cash") cashTotal += amount;
-        if(bill.paymentMode === "UPI") upiTotal += amount;
-
-        if(billDateString === todayString){
-            dailyIncome += amount;
+        // ===== Search & Date Filter =====
+        if (
+            !bill.mobile.toLowerCase().includes(searchMobile) ||
+            !bill.billNo.toLowerCase().includes(searchBill) ||
+            (dateFilter !== "" && billDateString !== dateFilter)
+        ) {
+            return;
         }
 
-        if(
-            billDateObj.getMonth() === today.getMonth() &&
-            billDateObj.getFullYear() === today.getFullYear()
-        ){
-            monthlyIncome += amount;
+        // ===== Income Calculation =====
+        if (bill.status === "Paid") {
+            let amount = parseFloat(bill.total) || 0;
+            paidCount++;
+            totalIncome += amount;
+
+            if (bill.paymentMode === "Cash") cashTotal += amount;
+            if (bill.paymentMode === "UPI") upiTotal += amount;
+
+            if (billDateString === todayString) dailyIncome += amount;
+
+            if (
+                billDateObj.getMonth() === today.getMonth() &&
+                billDateObj.getFullYear() === today.getFullYear()
+            ) monthlyIncome += amount;
+        } else {
+            unpaidCount++;
         }
 
-    } else {
-        unpaidCount++;
-    }
-
-    // ===== Search Filter =====
-    if(
-        bill.mobile.toLowerCase().includes(searchMobile) &&
-        bill.billNo.toLowerCase().includes(searchBill) &&
-        (dateFilter==="" || billDateString===dateFilter)
-    ){
-
+        // ===== Render Row =====
         let paymentClass = bill.paymentMode === "Cash" ? "payment-cash" :
-                           bill.paymentMode === "UPI" ? "payment-upi" : "payment-other";
+            bill.paymentMode === "UPI" ? "payment-upi" : "payment-other";
 
         let nameClass = bill.status === "Paid" ? "customer-name-paid" : "customer-name-unpaid";
 
         table.innerHTML += `
-        <tr>
-        <td>${bill.billNo}</td>
-        <td>${bill.date}</td>
-        <td class="${nameClass}" onclick="viewBill(${index})">${bill.name}</td>
-        <td>${bill.mobile}</td>
-        <td class="${paymentClass}">${bill.paymentMode || "-"}</td>
-        <td>₹${bill.total}</td>
-        <td class="${bill.status === "Paid" ? "status-paid" : "status-unpaid"}">${bill.status}</td>
-        <td class="button-group">
-            <button class="viewBtn" onclick="viewBill(${index})">View</button>
-            <button class="editBtn" onclick="openEdit(${index})">Edit</button>
-            <button class="deleteBtn" onclick="deleteBill(${index})">Delete</button>
-        </td>
-        </tr>
+            <tr>
+                <td>${bill.billNo}</td>
+                <td>${bill.date}</td>
+                <td class="${nameClass}" onclick="viewBill(${index})">${bill.name}</td>
+                <td>${bill.mobile}</td>
+                <td class="${paymentClass}">${bill.paymentMode || "-"}</td>
+                <td>₹${bill.total}</td>
+                <td class="${bill.status === "Paid" ? "status-paid" : "status-unpaid"}">${bill.status}</td>
+                <td class="button-group">
+                    <button class="viewBtn" onclick="viewBill(${index})">View</button>
+                    <button class="editBtn" onclick="openEdit(${index})">Edit</button>
+                    <button class="deleteBtn" onclick="deleteBill(${index})">Delete</button>
+                    ${bill.status === "Unpaid" && currentTab === "unpaid" ? `<button class="remindBtn" onclick="sendWhatsAppReminder(${index})">Remind</button>` : ""}
+                </td>
+            </tr>
         `;
-    }
+    });
 
-});
+    // Update stats
+    document.getElementById("dailyTotal").innerText = dailyIncome;
+    document.getElementById("monthlyTotal").innerText = monthlyIncome;
+    document.getElementById("overallTotal").innerText = totalIncome;
 
-document.getElementById("dailyTotal").innerText = dailyIncome;
-document.getElementById("monthlyTotal").innerText = monthlyIncome;
-document.getElementById("overallTotal").innerText = totalIncome;
-
-document.getElementById("paidCount").innerText = paidCount;
-document.getElementById("unpaidCount").innerText = unpaidCount;
-document.getElementById("cashTotal").innerText = cashTotal;
-document.getElementById("upiTotal").innerText = upiTotal;
-
+    document.getElementById("paidCount").innerText = paidCount;
+    document.getElementById("unpaidCount").innerText = unpaidCount;
+    document.getElementById("cashTotal").innerText = cashTotal;
+    document.getElementById("upiTotal").innerText = upiTotal;
 }
 
 let currentEditIndex = null;
@@ -529,6 +566,18 @@ function openEdit(index){
 function closeModal(){
     document.getElementById("editModal").style.display = "none";
 }
+let today = new Date();
+
+// 5 दिन जोड़ें
+today.setDate(today.getDate() + 7);
+
+// फिर format करें
+let yyyy = today.getFullYear();
+let mm = String(today.getMonth() + 1).padStart(2, '0'); // Month 0-11
+let dd = String(today.getDate()).padStart(2, '0');
+
+let dueDate = `${dd}-${mm}-${yyyy}`;
+console.log("Due Date (+7 days):", dueDate);
 
 function saveEdit(){
     let allBills = JSON.parse(localStorage.getItem("allBills")) || [];
@@ -564,6 +613,48 @@ function viewBill(index){
     window.open("professionalbill.html");
 }
 
+function sendWhatsAppReminder(index) {
+    let allBills = JSON.parse(localStorage.getItem("allBills")) || [];
+    let bill = allBills[index];
+
+    if (!bill) {
+        alert("Bill data nahi mila!");
+        return;
+    }
+
+    // संदेश (हिंदी + English)
+    let message = `प्रिय *${bill.name}*,
+Bill No: *${bill.billNo}*  
+Amount: *₹${bill.total}*  
+Due Date: *${dueDate}*
+
+_हम आपको यह विनम्र याद दिलाना चाहते हैं कि आपका ऊपर उल्लिखित बिल अभी तक भुगतान नहीं हुआ है।_  
+_कृपया निर्धारित समय_ *${dueDate}* _के भीतर भुगतान कर दें ताकि आपकी सेवाओं में कोई व्यवधान न हो।_  
+_समय पर भुगतान करने से आपको अतिरिक्त शुल्क या किसी भी प्रकार की सेवा में रुकावट से बचने में मदद मिलेगी।_  
+
+~*यदि आपने पहले ही भुगतान कर दिया है, तो कृपया इस संदेश को अनदेखा करें।*~  
+
+Hello *${bill.name}*,
+
+_This is a polite reminder that your above-mentioned bill is still pending._  
+_Kindly make the payment within_ *${dueDate}* _the stipulated time to avoid any disruption in your services._  
+_Timely payment helps you avoid extra charges or any interruption in service._  
+
+~*If you have already made the payment, please ignore this message.*~
+
+*धन्यवाद / Thank you,*  
+*TECH SOURCE* (UPI: _*9661905351@ybl*_)`;
+
+    // URL के लिए encode करें
+    let encodedMessage = encodeURIComponent(message);
+
+    // WhatsApp लिंक (मोबाइल और वेब दोनों के लिए)
+    let whatsappURL = `https://wa.me/91${bill.mobile}?text=${encodedMessage}`;
+
+    // नई टैब/विंडो में खोलें
+    window.open(whatsappURL, "_blank");
+}
+
 function deleteBill(index){
 let allBills = JSON.parse(localStorage.getItem("allBills")) || [];
 allBills.splice(index,1);
@@ -580,7 +671,7 @@ loadBills();
 }
 
 loadBills();
-</script>
 
+</script>
 </body>
 </html>
