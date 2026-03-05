@@ -58,27 +58,6 @@ button{
 </select>
 </div>
 
-<!-- BILL SECTION -->
-<h2>Create Bill</h2>
-<div class="card">
-Customer Name:
-<input type="text" id="customerName"><br>
-
-Mobile Number:
-<input type="text" id="customerMobile"><br>
-
-Total Amount:
-<input type="number" id="totalAmount"><br>
-
-Paid Amount:
-<input type="number" id="paidAmount" oninput="calculateDue()"><br>
-
-Due Amount:
-<span id="dueAmount">0</span><br><br>
-
-<button onclick="saveBill()">Save Bill</button>
-</div>
-
 <!-- ALL BILLS -->
 <h2>All Bills</h2>
 <div class="card">
@@ -103,11 +82,6 @@ Monthly Income: ₹ <span id="monthlyIncome">0</span>
 Send Reminder To All Unpaid
 </button>
 
-    <button onclick="window.open('BILL HISTORY.html')">
-All History</button>
-    <button onclick="window.open('index.html')">
-Home</button>
-
 <script>
 
 let services = JSON.parse(localStorage.getItem("services")) || [];
@@ -121,7 +95,10 @@ function addService(){
     let price = document.getElementById("servicePrice").value;
 
     if(name && price){
-        services.push({name, price});
+        services.push({
+    name: name,
+    price: parseFloat(price)
+});
         localStorage.setItem("services", JSON.stringify(services));
         loadServices();
         alert("Service Added");
@@ -136,70 +113,41 @@ function loadServices(){
         select.innerHTML += `<option value="${s.price}">${s.name}</option>`;
     });
 }
-
 function autoFillPrice(){
     let price = document.getElementById("serviceDropdown").value;
-    document.getElementById("totalAmount").value = price;
+    document.getElementById("servicePrice").value = price;
 }
-
-/* DUE CALCULATION */
-
-function calculateDue(){
-    let total = parseFloat(document.getElementById("totalAmount").value) || 0;
-    let paid = parseFloat(document.getElementById("paidAmount").value) || 0;
-    let due = total - paid;
-    if(due < 0) due = 0;
-    document.getElementById("dueAmount").innerText = due;
-}
-
-/* SAVE BILL */
-
-function saveBill(){
-
-    let name = document.getElementById("customerName").value;
-    let mobile = document.getElementById("customerMobile").value;
-    let total = parseFloat(document.getElementById("totalAmount").value) || 0;
-    let paid = parseFloat(document.getElementById("paidAmount").value) || 0;
-    let due = total - paid;
-    if(due < 0) due = 0;
-
-    let bill = {
-        name: name,
-        mobile: mobile,
-        total: total,
-        paid: paid,
-        due: due,
-        status: due > 0 ? "Unpaid" : "Paid",
-        date: new Date().toISOString(),
-        lastReminderDate: null
-    };
-
-    allBills.push(bill);
-    localStorage.setItem("allBills", JSON.stringify(allBills));
-
-    alert("Bill Saved Successfully");
-
-    loadBills();
-    calculateMonthlyIncome();
-    drawChart();
-}
-
-/* LOAD ALL BILLS */
-
 function loadBills(){
 
     let html = "";
 
     allBills.forEach((b,index)=>{
 
+        let total = parseFloat(b.total) || 0;
+        let paid = parseFloat(b.paid) || 0;
+        let due = total - paid;
+
         html += `
         <div style="border-bottom:1px solid #ccc;padding:10px;">
             <b>${b.name}</b><br>
+            Bill No: ${b.billNo}<br>
             Mobile: ${b.mobile}<br>
-            Total: ₹${b.total} |
-            Paid: ₹${b.paid} |
-            Due: ₹${b.due}<br>
-            Date: ${new Date(b.date).toLocaleDateString()}<br>
+
+            Total: ₹${total} |
+            Paid: ₹${paid} |
+            Due: ₹${due <= 0 ? "Paid" : due}<br>
+
+            ${paid < total ? `
+            Pay Now:
+            <input type="number" id="pay${index}" placeholder="Amount">
+
+            <button onclick="payNow(${index})">
+            Update Payment
+            </button>
+            ` : `<b style="color:green;">Payment Completed</b>`}
+
+            <br>
+            Date: ${new Date(b.date).toLocaleDateString()}
         </div>
         `;
     });
@@ -210,7 +158,6 @@ function loadBills(){
 
     document.getElementById("billList").innerHTML = html;
 }
-
 /* REMINDER SYSTEM */
 
 function checkReminders() {
@@ -292,6 +239,40 @@ function calculateMonthlyIncome(){
     document.getElementById("monthlyIncome").innerText = income;
 }
 
+function payNow(index){
+
+let payAmount =
+parseFloat(document.getElementById("pay"+index).value) || 0;
+
+if(payAmount <= 0){
+    alert("Enter payment amount");
+    return;
+}
+
+if(payAmount > allBills[index].due){
+    alert("Payment cannot be greater than Due Amount");
+    return;
+}
+    allBills[index].paid =
+(parseFloat(allBills[index].paid) || 0) + payAmount;
+
+    allBills[index].due =
+parseFloat(allBills[index].total) - parseFloat(allBills[index].paid);
+
+    if(allBills[index].due <= 0){
+        allBills[index].due = 0;
+        allBills[index].status = "Paid";
+    }
+
+    localStorage.setItem("allBills", JSON.stringify(allBills));
+
+    alert("Payment Updated");
+
+    loadBills();
+    calculateMonthlyIncome();
+    drawChart();
+}
+
 function drawChart(){
 
     let monthlyData = new Array(12).fill(0);
@@ -327,5 +308,4 @@ drawChart();
 </script>
 
 </body>
-
 </html>
