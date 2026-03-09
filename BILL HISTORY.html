@@ -628,6 +628,647 @@ function sendWhatsAppReminder(index) {
 Bill No: *${bill.billNo}*  
 Amount: *₹${bill.total}*  
 Due Date: *${dueDate}*
+
+_हम आपको यह विनम्र याद दिलाना चाहते हैं कि आपका ऊपर उल्लिखित बिल अभी तक भुगतान नहीं हुआ है।_  
+_कृपया निर्धारित समय_ *${dueDate}* _के भीतर भुगतान कर दें ताकि आपकी सेवाओं में कोई व्यवधान न हो।_  
+_समय पर भुगतान करने से आपको अतिरिक्त शुल्क या किसी भी प्रकार की सेवा में रुकावट से बचने में मदद मिलेगी।_  
+
+~*यदि आपने पहले ही भुगतान कर दिया है, तो कृपया इस संदेश को अनदेखा करें।*~  
+
+Hello *${bill.name}*,
+
+_This is a polite reminder that your above-mentioned bill is still pending._  
+_Kindly make the payment within_ *${dueDate}* _the stipulated time to avoid any disruption in your services._  
+_Timely payment helps you avoid extra charges or any interruption in service._  
+
+~*If you have already made the payment, please ignore this message.*~
+
+*धन्यवाद / Thank you,*  
+*TECH SOURCE* (UPI: _*9661905351@ybl*_)`;
+
+    // URL के लिए encode करें
+    let encodedMessage = encodeURIComponent(message);
+
+    // WhatsApp लिंक (मोबाइल और वेब दोनों के लिए)
+    let whatsappURL = `https://wa.me/91${bill.mobile}?text=${encodedMessage}`;
+
+    // नई टैब/विंडो में खोलें
+    window.open(whatsappURL, "_blank");
+}
+
+function deleteBill(index){
+let allBills = JSON.parse(localStorage.getItem("allBills")) || [];
+allBills.splice(index,1);
+localStorage.setItem("allBills", JSON.stringify(allBills));
+loadBills();
+document.getElementById("billPreview").style.display="none";
+}
+
+function clearFilters(){
+document.getElementById("searchMobile").value="";
+document.getElementById("searchBill").value="";
+document.getElementById("dateFilter").value="";
+loadBills();
+}
+
+loadBills();
+
+</script>
+</body>
+</html>    outline: none;
+    transition: all 0.3s ease;
+}
+
+.top-controls input[type="text"]:hover,
+.top-controls input[type="date"]:hover,
+.top-controls input[type="text"]:focus,
+.top-controls input[type="date"]:focus {
+    border-color: #2196F3;
+    box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
+}
+
+.clear {
+    background-color: #c00f0f;
+    color: #fff;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+}
+
+.clear:hover {
+    transform: scale(1.3);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    background-color: #d32f2f;
+}
+.billgenrate:hover {
+    background-color: #45a049;
+    transform: scale(1.3);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:#fff;
+}
+th,td{
+    border:1px solid #ccc;
+    padding:8px;
+    text-align:center;
+}
+
+button{ cursor:pointer; }
+
+/* Common button styling */
+.button-group button {
+    padding: 8px 15px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.3s, box-shadow 0.3s;
+    color: #fff;
+}
+
+/* Button Colors */
+.viewBtn { background-color: #2196F3; }
+.editBtn { background-color: #FFC107; color:#000; }
+.deleteBtn { background-color: #F44336; }
+
+/* Hover Zoom Effect */
+.button-group button:hover {
+    transform: scale(1.1) translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+}
+.button-group button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Bill Preview Modal Styling */
+#billPreview {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 800px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    padding: 25px 30px;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-in-out;
+    overflow: visible;
+    max-height: none;
+    position: relative; /* important for absolute children */
+}
+
+/* Overlay */
+#billOverlay {
+    display: none;
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+}
+
+/* BACKDROP */
+.modal{
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+/* MODAL BOX */
+.modal-content{
+    background: #ffffff;
+    width: 380px;
+    max-width: 95%;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    animation: slideUp 0.3s ease;
+    position: relative;
+}
+
+/* INPUTS */
+.modal-content input,
+.modal-content select{
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+    transition: 0.3s ease;
+}
+
+.modal-content input:focus,
+.modal-content select:focus{
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0,123,255,0.3);
+}
+/* BUTTON SECTION */
+.modal-buttons{
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* BUTTON STYLE */
+.modal-buttons button{
+    padding: 8px 18px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.remindBtn {
+    background-color: #25D366; /* WhatsApp हरा */
+    color: white;
+    border-radius: 5px;
+    padding: 6px 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.remindBtn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* PRIMARY BUTTON */
+.modal-buttons .primary{
+    background: #007bff;
+    color: white;
+}
+
+.modal-buttons .primary:hover{
+    background: #0056b3;
+}
+
+/* CANCEL BUTTON */
+.modal-buttons .secondary{
+    background: #f0f0f0;
+}
+
+.modal-buttons .secondary:hover{
+    background: #ddd;
+}
+
+/* ANIMATIONS */
+@keyframes fadeIn{
+    from{ opacity:0; }
+    to{ opacity:1; }
+}
+
+@keyframes slideUp{
+    from{
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to{
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -45%) scale(0.95); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+#billPreview button {
+    background: #2196F3;
+    color: #fff;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    margin: 10px 5px 0 0;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+#billPreview button:hover {
+    background: #1976D2;
+    transform: scale(1.05);
+}
+
+#billPreview .closeBtn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #333;
+}
+#billPreview .closeBtn:hover { color: #F44336; }
+
+/* History Cards */
+.myhistory { display:flex; justify-content:space-between; gap:20px; padding:20px; background:#f8f9fa; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); flex-wrap:wrap;}
+.income, .incomea { flex:1 1 250px; min-width:250px; padding:20px; border-radius:10px; color:#fff;}
+.income { background-color:#4CAF50;}
+.incomea { background-color:#2196F3;}
+.income h3, .incomea h3 { margin:10px 0; font-size:18px;}
+.income span, .incomea span { font-weight:bold; color:#fff;}
+.income:hover, .incomea:hover { transform:translateY(-5px); box-shadow:0 4px 12px rgba(0,0,0,0.2); transition:0.3s; }
+
+.status-paid { background-color:#4CAF50; color:#fff; padding:5px 10px; border-radius:5px; font-weight:bold; }
+.status-unpaid { background-color:#F44336; color:#fff; padding:5px 10px; border-radius:5px; font-weight:bold; }
+.payment-cash { background-color:#FFC107; color:#000; padding:5px 10px; border-radius:5px; font-weight:bold; }
+.payment-upi { background-color:#2196F3; color:#fff; padding:5px 10px; border-radius:5px; font-weight:bold; }
+.payment-other { background-color:#9E9E9E; color:#fff; padding:5px 10px; border-radius:5px; font-weight:bold; }
+
+.customer-name-paid { color:#4CAF50; font-weight:bold; }
+.customer-name-unpaid { color:#F44336; font-weight:bold; }
+.customer-name-paid:hover, .customer-name-unpaid:hover { transform:scale(1.2); cursor:pointer; text-decoration:underline; transition:all 0.3s ease; }
+
+/* ===== FIXED PRINT CSS ===== */
+@media print {
+    .buttons{
+        display:none !important;
+    }
+}
+@media print {
+    body * { display: none !important; }
+    #billPreviewContent {
+        display: block !important;
+        position: relative !important;
+    }
+    #billPreviewContent * { display: block !important; }
+}
+.billgenrate {
+    background-color: #4CAF50;
+    color: #ffffff;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+}
+.tabBtn {
+    padding:8px 16px;
+    margin-right:10px;
+    border:none;
+    border-radius:5px;
+    background:#2196F3;
+    color:#fff;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+}
+.tabBtn:hover { background:#1976D2; }
+.tabBtn.active { background:#4CAF50; }
+</style>
+</head>
+
+<body>
+
+<h2>TECH SOURCE - Admin Panel</h2>
+
+<div class="top-controls">
+
+Search Mobile:
+<input placeholder="enter mobile number" type="text" id="searchMobile" onkeyup="loadBills()">
+
+Search Bill No:
+<input placeholder="enter bill number" type="text" id="searchBill" onkeyup="loadBills()">
+
+Date:
+<input type="date" id="dateFilter" onchange="loadBills()">
+<button class="clear" onclick="clearFilters()">Clear</button>
+<button class="billgenrate" onclick="window.open('BILL GERATER.html')">Generate New Bill</button>
+<button class="billgenrate" onclick="window.open('index.html')">Home</button>
+</div>
+<!-- TAB BUTTONS -->
+<button class="tabBtn active" onclick="switchTab('all', this)">All Bills</button>
+<button class="tabBtn" onclick="switchTab('unpaid', this)">Unpaid Bills</button>
+<div class="myhistory">
+    <div class="income">
+        <h3>Paid Bills: <span id="paidCount">0</span></h3>
+        <h3>Unpaid Bills: <span id="unpaidCount">0</span></h3>
+        <h3>Cash Total: ₹ <span id="cashTotal">0</span></h3>
+        <h3>UPI Total: ₹ <span id="upiTotal">0</span></h3>
+    </div>
+
+    <div class="incomea">
+        <h3>Daily Income: ₹ <span id="dailyTotal">0</span></h3>
+        <h3>Monthly Income: ₹ <span id="monthlyTotal">0</span></h3>
+        <h3>Total Income: ₹ <span id="overallTotal">0</span></h3>
+    </div>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Bill No</th>
+<th>Date</th>
+<th>Name</th>
+<th>Mobile</th>
+<th>Payment Mode</th>
+<th>Total</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="billTable"></tbody>
+</table>
+
+<div id="billPreview"></div>
+
+<div id="editModal" class="modal">
+  <div class="modal-content">
+    <h3>Edit Bill</h3>
+
+    <input type="text" id="editName" placeholder="Customer Name">
+
+    <input type="number" id="editSubtotal" placeholder="Subtotal">
+    <input type="number" id="editDiscount" placeholder="Discount">
+
+    <input type="number" id="editTotal" placeholder="Final Total" readonly>
+
+    <select id="editStatus">
+        <option value="Paid">Paid</option>
+        <option value="Unpaid">Unpaid</option>
+    </select>
+
+    <select id="editPaymentMode">
+        <option value="Cash">Cash</option>
+        <option value="UPI">UPI</option>
+        <option value="Bank">Bank</option>
+        <option value="Unpaid">Unpaid</option>
+    </select>
+
+    <div class="modal-buttons">
+        <button onclick="saveEdit()">Save</button>
+        <button onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+<script>
+
+    document.getElementById("editSubtotal").addEventListener("input", calculateTotal);
+document.getElementById("editDiscount").addEventListener("input", calculateTotal);
+
+function calculateTotal(){
+    let subtotal = parseFloat(document.getElementById("editSubtotal").value) || 0;
+    let discount = parseFloat(document.getElementById("editDiscount").value) || 0;
+
+    let finalTotal = subtotal - discount;
+
+    if(finalTotal < 0) finalTotal = 0;
+
+    document.getElementById("editTotal").value = finalTotal;
+}
+
+let currentTab = "all"; // Default tab
+
+function switchTab(tab, btn){
+    currentTab = tab;
+    document.querySelectorAll(".tabBtn").forEach(b=>{
+        b.classList.remove("active");
+    });
+    btn.classList.add("active");
+    loadBills();
+}
+
+function loadBills() {
+    let allBills = JSON.parse(localStorage.getItem("allBills")) || [];
+
+    let searchMobile = document.getElementById("searchMobile").value.toLowerCase();
+    let searchBill = document.getElementById("searchBill").value.toLowerCase();
+    let dateFilter = document.getElementById("dateFilter").value;
+
+    let table = document.getElementById("billTable");
+    table.innerHTML = "";
+
+    let dailyIncome = 0;
+    let monthlyIncome = 0;
+    let totalIncome = 0;
+
+    let paidCount = 0;
+    let unpaidCount = 0;
+    let cashTotal = 0;
+    let upiTotal = 0;
+
+    let today = new Date();
+    let todayString = today.toISOString().split("T")[0];
+
+    allBills.forEach((bill, index) => {
+        let billDateObj = new Date(bill.date);
+        let billDateString = billDateObj.toISOString().split("T")[0];
+
+        // ===== Tab Filter =====
+        if (currentTab === "unpaid" && bill.status === "Paid") return;
+
+        // ===== Search & Date Filter =====
+        if (
+            !bill.mobile.toLowerCase().includes(searchMobile) ||
+            !bill.billNo.toLowerCase().includes(searchBill) ||
+            (dateFilter !== "" && billDateString !== dateFilter)
+        ) {
+            return;
+        }
+
+        // ===== Income Calculation =====
+        if (bill.status === "Paid") {
+            let amount = parseFloat(bill.total) || 0;
+            paidCount++;
+            totalIncome += amount;
+
+            if (bill.paymentMode === "Cash") cashTotal += amount;
+            if (bill.paymentMode === "UPI") upiTotal += amount;
+
+            if (billDateString === todayString) dailyIncome += amount;
+
+            if (
+                billDateObj.getMonth() === today.getMonth() &&
+                billDateObj.getFullYear() === today.getFullYear()
+            ) monthlyIncome += amount;
+        } else {
+            unpaidCount++;
+        }
+
+        // ===== Render Row =====
+        let paymentClass = bill.paymentMode === "Cash" ? "payment-cash" :
+            bill.paymentMode === "UPI" ? "payment-upi" : "payment-other";
+
+        let nameClass = bill.status === "Paid" ? "customer-name-paid" : "customer-name-unpaid";
+
+        table.innerHTML += `
+            <tr>
+                <td>${bill.billNo}</td>
+                <td>${bill.date}</td>
+                <td class="${nameClass}" onclick="viewBill(${index})">${bill.name}</td>
+                <td>${bill.mobile}</td>
+                <td class="${paymentClass}">${bill.paymentMode || "-"}</td>
+                <td>₹${bill.total}</td>
+                <td class="${bill.status === "Paid" ? "status-paid" : "status-unpaid"}">${bill.status}</td>
+                <td class="button-group">
+                    <button class="viewBtn" onclick="viewBill(${index})">View</button>
+                    <button class="editBtn" onclick="openEdit(${index})">Edit</button>
+                    <button class="deleteBtn" onclick="deleteBill(${index})">Delete</button>
+                    ${bill.status === "Unpaid" && currentTab === "unpaid" ? `<button class="remindBtn" onclick="sendWhatsAppReminder(${index})">Remind</button>` : ""}
+                </td>
+            </tr>
+        `;
+    });
+
+    // Update stats
+    document.getElementById("dailyTotal").innerText = dailyIncome;
+    document.getElementById("monthlyTotal").innerText = monthlyIncome;
+    document.getElementById("overallTotal").innerText = totalIncome;
+
+    document.getElementById("paidCount").innerText = paidCount;
+    document.getElementById("unpaidCount").innerText = unpaidCount;
+    document.getElementById("cashTotal").innerText = cashTotal;
+    document.getElementById("upiTotal").innerText = upiTotal;
+}
+
+let currentEditIndex = null;
+
+function openEdit(index){
+    let allBills = JSON.parse(localStorage.getItem("allBills")) || [];
+    let bill = allBills[index];
+
+    currentEditIndex = index;
+
+    document.getElementById("editName").value = bill.name;
+    document.getElementById("editSubtotal").value = bill.subtotal || bill.total;
+    document.getElementById("editDiscount").value = bill.discount || 0;
+    document.getElementById("editTotal").value = bill.total;
+    document.getElementById("editStatus").value = bill.status;
+    document.getElementById("editPaymentMode").value = bill.paymentMode;
+
+    document.getElementById("editModal").style.display = "flex";
+}
+
+function closeModal(){
+    document.getElementById("editModal").style.display = "none";
+}
+let today = new Date();
+
+// 5 दिन जोड़ें
+today.setDate(today.getDate() + 7);
+
+// फिर format करें
+let yyyy = today.getFullYear();
+let mm = String(today.getMonth() + 1).padStart(2, '0'); // Month 0-11
+let dd = String(today.getDate()).padStart(2, '0');
+
+let dueDate = `${dd}-${mm}-${yyyy}`;
+console.log("Due Date (+7 days):", dueDate);
+
+function saveEdit(){
+    let allBills = JSON.parse(localStorage.getItem("allBills")) || [];
+
+    let subtotal = parseFloat(document.getElementById("editSubtotal").value) || 0;
+    let discount = parseFloat(document.getElementById("editDiscount").value) || 0;
+    let total = subtotal - discount;
+
+    if(total < 0) total = 0;
+
+    allBills[currentEditIndex].name = document.getElementById("editName").value;
+    allBills[currentEditIndex].subtotal = subtotal;
+    allBills[currentEditIndex].discount = discount;
+    allBills[currentEditIndex].total = total;
+    allBills[currentEditIndex].status = document.getElementById("editStatus").value;
+    allBills[currentEditIndex].paymentMode = document.getElementById("editPaymentMode").value;
+
+    localStorage.setItem("allBills", JSON.stringify(allBills));
+
+    closeModal();
+    loadBills();
+}
+
+function formatDateForInput(dateString){
+let d = new Date(dateString);
+let month = ("0" + (d.getMonth()+1)).slice(-2);
+let day = ("0" + d.getDate()).slice(-2);
+return d.getFullYear()+"-"+month+"-"+day;
+}
+
+function viewBill(index){
+    localStorage.setItem("selectedBillIndex", index);
+    window.open("professionalbill.html");
+}
+
+function sendWhatsAppReminder(index) {
+    let allBills = JSON.parse(localStorage.getItem("allBills")) || [];
+    let bill = allBills[index];
+
+    if (!bill) {
+        alert("Bill data nahi mila!");
+        return;
+    }
+
+    // संदेश (हिंदी + English)
+    let message = `प्रिय *${bill.name}*,
+Bill No: *${bill.billNo}*  
+Amount: *₹${bill.total}*  
+Due Date: *${dueDate}*
 Click view bill&pay ${bill.image} to pay your bill.
 
 _हम आपको यह विनम्र याद दिलाना चाहते हैं कि आपका ऊपर उल्लिखित बिल अभी तक भुगतान नहीं हुआ है।_  
