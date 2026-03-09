@@ -6,7 +6,7 @@
 
 <!-- QR -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
+    
 <!-- Download -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1004,9 +1004,6 @@ Qty: <input type="number" min="1" value="1" class="qty">
 
 </div>
 </div>
-<button class="btn-secondary" onclick="uploadBillImage()">
-Generate Bill Link
-</button>
 <button class="btn-primary" onclick="generateBill()">Generate Bill</button>
 <button class="btn-primary" onclick="window.print()">Print</button>
 
@@ -1234,61 +1231,6 @@ html2canvas(document.querySelector("#bill"), {
 }
 
 let dynamicServices = JSON.parse(localStorage.getItem("services")) || [];
-
-function uploadBillImage(){
-    let billNo = document.getElementById("billNo").innerText;
-
-if(!billNo){
-alert("Please generate bill first");
-return;
-}
-
-html2canvas(document.querySelector("#bill"),{
-scale:2,
-useCORS:true
-}).then(canvas => {
-
-let imageData = canvas.toDataURL("image/jpeg",0.9);
-
-let formData = new FormData();
-formData.append("image", imageData.split(",")[1]);
-
-fetch("https://api.imgbb.com/1/upload?key=fa4ad05090c8cc3f9ade673a64a52235",{
-method:"POST",
-body:formData
-})
-.then(res => res.json())
-.then(data => {
-
-let imageURL = data.data.display_url;
-
-// screen par link show
-document.getElementById("billImageLink").href = imageURL;
-document.getElementById("billImageLink").innerText = imageURL;
-
-// localStorage se bills load
-let allBills = JSON.parse(localStorage.getItem("allBills")) || [];
-
-// current bill number
-let currentBillNo = document.getElementById("billNo").innerText;
-
-// same bill me link save
-allBills.forEach(bill=>{
-    if(bill.billNo === currentBillNo){
-        bill.image = imageURL;
-    }
-});
-
-// dubara save
-localStorage.setItem("allBills", JSON.stringify(allBills));
-
-})
-.catch(err=>{
-console.log("Upload Error:",err);
-});
-
-});
-}
 
 function loadDynamicServices(){
 
