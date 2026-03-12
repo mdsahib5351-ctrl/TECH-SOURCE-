@@ -267,6 +267,35 @@ button{
     padding:3px 8px;
     border-radius:4px;
 }
+
+.due-table-container{
+position:absolute;
+bottom:20px;
+left:20px;
+}
+
+.due-table{
+width:220px;
+border-collapse:collapse;
+font-size:16px;
+}
+
+.due-table th, .due-table td{
+border:1px solid #000;
+padding:6px 10px;
+}
+
+.due-table th{
+background:#ffe6e6;
+color:#cc0000;
+}
+
+.due-table td{
+text-align:right;
+font-weight:bold;
+color:#cc0000;
+}
+
 </style>
 </head>
 
@@ -310,6 +339,10 @@ button{
                            <td>₹ <span id="subtotal"></span></td>
                        </tr>
                        <tr>
+                            <th>Paid Amount</th>
+                            <td>₹ <span id="paidAmount"></span></td>
+                       </tr>
+                       <tr>
                            <th>Discount</th>
                            <td>₹ <span id="discount"></span></td>
                        </tr>
@@ -328,7 +361,23 @@ button{
                    </tbody>
                </table>
            </div>
+       <div class="due-table-container">
+<table class="due-table">
+<tbody>
 
+<tr>
+<th>Paid Amount</th>
+<td>₹ <span id="paidBox"></span></td>
+</tr>
+
+<tr>
+<th>Due Amount</th>
+<td>₹ <span id="dueAmount"></span></td>
+</tr>
+
+</tbody>
+</table>
+</div>
            <div class="signature-section">
     <div>
     <div class="qr-container">
@@ -382,6 +431,7 @@ document.getElementById("customerSection").innerHTML =
 <strong>Mobile:</strong> ${bill.mobile}`;
 
 document.getElementById("subtotal").innerText = bill.subtotal;
+document.getElementById("paidAmount").innerText = bill.paidAmount;
 document.getElementById("discount").innerText = bill.discount;
 document.getElementById("finalTotal").innerText = bill.total;
 document.getElementById("paymentMode").innerText = bill.paymentMode;
@@ -470,52 +520,78 @@ html2canvas(document.querySelector("#invoice"), {
 
 });
 }
-// SUMMARY TABLE DYNAMIC FILL
+// ===== SUMMARY TABLE DYNAMIC FILL =====
 let summaryTable = document.querySelector(".summary-table tbody");
-summaryTable.innerHTML = ""; // purana clear kar do
+summaryTable.innerHTML = ""; // पुराना clear कर दो
 
-// Agar discount > 0 tabhi Subtotal aur Discount dikhe
-if(bill.discount && Number(bill.discount) > 0){
-    // Subtotal
-    if(bill.subtotal && Number(bill.subtotal) > 0){
-        let trSubtotal = document.createElement("tr");
-        trSubtotal.innerHTML = `<th>Subtotal</th><td>₹ ${bill.subtotal}</td>`;
-        summaryTable.appendChild(trSubtotal);
-    }
+// Convert to numbers
+let subtotal = Number(bill.subtotal) || 0;
+let discountAmount = Number(bill.discount) || 0;
+let paidAmount = Number(bill.paidAmount) || 0;
 
-    // Discount
+// Calculate final total (subtotal - discount)
+let finalTotal = subtotal - discountAmount;
+
+// 1️⃣ Subtotal (sirf discount > 0 ho tabhi)
+if(discountAmount > 0 && subtotal > 0){
+    let trSubtotal = document.createElement("tr");
+    trSubtotal.innerHTML = `<th>Subtotal</th><td>₹ ${subtotal}</td>`;
+    summaryTable.appendChild(trSubtotal);
+}
+
+// 2️⃣ Discount (agar >0)
+if(discountAmount > 0){
     let trDiscount = document.createElement("tr");
-    trDiscount.innerHTML = `<th>Discount</th><td>₹ ${bill.discount}</td>`;
+    trDiscount.innerHTML = `<th>Discount</th><td>₹ ${discountAmount}</td>`;
     summaryTable.appendChild(trDiscount);
 }
 
-// Final Total (hamesha dikhaye)
-let trTotal = document.createElement("tr");
-trTotal.innerHTML = `<th>Final Total</th><td>₹ ${bill.total}</td>`;
-summaryTable.appendChild(trTotal);
+// 3️⃣ Paid / Due / Final Total logic
+let dueAmount = finalTotal - paidAmount; 
+document.getElementById("paidBox").innerText = paidAmount;
+document.getElementById("dueAmount").innerText = dueAmount > 0 ? dueAmount : 0;
+let dueBox = document.getElementById("dueAmount");
 
-// Payment Mode (sirf Paid ho to)
-if(bill.status.toLowerCase() === "paid"){
-    let trPayment = document.createElement("tr");
-    trPayment.innerHTML = `<th>Payment Mode</th><td>${bill.paymentMode}</td>`;
-    summaryTable.appendChild(trPayment);
+if(dueBox){
+    if(dueAmount > 0){
+        dueBox.innerText = dueAmount;
+    }else{
+        dueBox.innerText = "0";
+        document.querySelector(".due-table-container").style.display = "none";
+    }
+}
+if(paidAmount >= finalTotal){
+    // ✅ Full Paid: Show Final Total + Payment Mode
+    let trFinal = document.createElement("tr");
+    trFinal.innerHTML = `<th>Final Total</th><td>₹ ${finalTotal}</td>`;
+    summaryTable.appendChild(trFinal);
+
+    // Payment Mode only if status paid
+    if(bill.status.toLowerCase() === "paid"){
+        let trPayment = document.createElement("tr");
+        trPayment.innerHTML = `<th>Payment Mode</th><td>${bill.paymentMode}</td>`;
+        summaryTable.appendChild(trPayment);
+    }
+
+} 
+else if(paidAmount > 0 && paidAmount < finalTotal){
+
+    let trDue = document.createElement("tr");
+    trDue.innerHTML = `<th>Due Amount</th><td>₹ ${dueAmount}</td>`;
+    summaryTable.appendChild(trDue);
+
+    let trFinal = document.createElement("tr");
+    trFinal.innerHTML = `<th>Final Total</th><td>₹ ${finalTotal}</td>`;
+    summaryTable.appendChild(trFinal);
+
 }
 
-// Status (hamesha show)
+
+// 4️⃣ Status (hamesha show)
 let trStatus = document.createElement("tr");
-
-let statusClass = "";
-if(bill.status.toLowerCase() === "paid"){
-    statusClass = "status-paid";
-}else{
-    statusClass = "status-unpaid";
-}
-
-trStatus.innerHTML = `<th>Status</th>
-<td><span class="${statusClass}">${bill.status}</span></td>`;
-
+let statusClass = (bill.status.toLowerCase() === "paid") ? "status-paid" : "status-unpaid";
+trStatus.innerHTML = `<th>Status</th><td><span class="${statusClass}">${bill.status}</span></td>`;
 summaryTable.appendChild(trStatus);
-
 function downloadJPG(){
 
 let buttons = document.querySelector(".buttons");
