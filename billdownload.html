@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Download Bill</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f6f9;
+text-align:center;
+padding:60px;
+}
+
+.box{
+max-width:420px;
+margin:auto;
+background:white;
+padding:30px;
+border-radius:12px;
+box-shadow:0 5px 20px rgba(0,0,0,0.2);
+}
+
+h2{
+margin-bottom:20px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin:12px 0;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:16px;
+}
+
+button{
+padding:12px 20px;
+background:#4CAF50;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-size:16px;
+}
+
+button:hover{
+background:#43a047;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>Download Bill</h2>
+
+<input 
+type="text" 
+id="searchBillNo" 
+placeholder="Download by Bill Number (Example TS001)"
+style="text-transform:uppercase"
+oninput="this.value=this.value.toUpperCase()"
+>
+
+<input 
+type="number" 
+id="searchMobile" 
+placeholder="Download by Mobile Number"
+>
+
+<button onclick="downloadBill()">Download Bill</button>
+
+</div>
+
+<script>
+
+function downloadBill(){
+
+let billNo = document.getElementById("searchBillNo").value.trim();
+let mobile = document.getElementById("searchMobile").value.trim();
+
+let allBills = JSON.parse(localStorage.getItem("allBills")) || [];
+
+let billIndex = -1;
+
+/* Bill Number Search */
+
+if(billNo){
+
+billIndex = allBills.findIndex(b => 
+b.billNo.toLowerCase() === billNo.toLowerCase()
+);
+
+}
+
+/* Mobile Number Search */
+
+else if(mobile){
+
+billIndex = allBills.findIndex(b => 
+b.mobile === mobile
+);
+
+}
+
+/* Nothing Entered */
+
+else{
+
+alert("Enter Bill Number OR Mobile Number");
+
+return;
+
+}
+
+/* Bill Not Found */
+
+if(billIndex === -1){
+
+alert("Bill Not Found");
+
+return;
+
+}
+
+/* Save index for next page */
+
+localStorage.setItem("selectedBillIndex", billIndex);
+
+/* Open bill page */
+
+window.open("professionalbill.html","_blank");
+
+}
+
+</script>
+
+</body>
+</html>
