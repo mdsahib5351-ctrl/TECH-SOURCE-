@@ -686,28 +686,10 @@ let password = document.getElementById("loginPassword").value;
 auth.signInWithEmailAndPassword(email, password)
 .then((userCredential)=>{
 
-alert("Login Successful");
-
-// redirect
+const user = userCredential.user;
 
 // ADMIN EMAIL
 const ADMIN_EMAIL = "techsource@gmail.com";
-
-// ================= LOGIN =================
-document.querySelector(".credentials-panel.signin form")
-.addEventListener("submit", function(e){
-
-e.preventDefault();
-
-let email = document.getElementById("loginEmail").value;
-let password = document.getElementById("loginPassword").value;
-
-auth.signInWithEmailAndPassword(email, password)
-.then((userCredential)=>{
-
-const user = userCredential.user;
-
-alert("Login Successful");
 
 // EMAIL CHECK
 if(user.email === ADMIN_EMAIL){
@@ -722,12 +704,6 @@ window.location.href = "generatebill.html";
 
 }
 
-})
-.catch((error)=>{
-alert(error.message);
-});
-
-});
 })
 .catch((error)=>{
 alert(error.message);
@@ -749,7 +725,6 @@ let password = document.getElementById("registerPassword").value;
 auth.createUserWithEmailAndPassword(email, password)
 .then((userCredential)=>{
 
-// SAVE USERNAME
 return userCredential.user.updateProfile({
 displayName: username
 });
