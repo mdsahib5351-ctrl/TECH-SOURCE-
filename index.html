@@ -459,18 +459,13 @@ z-index:9999;
      <div class="card"><h3>LOGO</h3><p>SHOW TECH SOURCE LOGO</p><a href="tsgaming.jpeg" class="btn">Logo</a></div>
     </div> 
 </section>
-<section id="download-bill" style="display:none;">
+<section id="download-bill">
+  <div class="section-title">बिल डाउनलोड करें</div>
 
-<div class="section-title">Download Bill</div>
-
-<div style="max-width:400px;margin:auto;text-align:center">
-
-<input type="text" id="searchBillNo" placeholder="Download By Bill Number (Example TS000)">
-
-<button class="btn" onclick="downloadBillByNumber()">Download Bill</button>
-
-</div>
-
+  <div style="max-width:400px;margin:auto;text-align:center">
+    <input type="text" id="downloadBillNo" placeholder="बिल नंबर डालें (उदा. TS000)">
+    <button class="btn" onclick="downloadBill()">डाउनलोड करें</button>
+  </div>
 </section>
 
 <section id="qr-section">
@@ -684,32 +679,6 @@ document.getElementById("loader").style.display="none";
 
 });
 
-function downloadBillByNumber(){
-
-let billNo = document.getElementById("searchBillNo").value.trim();
-
-if(!billNo){
-alert("Enter Bill Number");
-return;
-}
-
-let allBills = JSON.parse(localStorage.getItem("allBills")) || [];
-
-// bill find
-let billIndex = allBills.findIndex(b => b.billNo === billNo);
-
-if(billIndex === -1){
-alert("Bill Not Found");
-return;
-}
-
-// selected bill index save
-localStorage.setItem("selectedBillIndex", billIndex);
-
-// open professional invoice page
-window.open("professionalbill.html","_blank");
-
-}
 function openDownloadBill(){
 
     // सारे sections hide
@@ -719,6 +688,21 @@ function openDownloadBill(){
 
     // सिर्फ download-bill show
     document.getElementById("download-bill").style.display="block";
+}
+// Firebase collection: 'bills'
+// ध्यान: तुम्हारा Firebase config पहले से loaded होना चाहिए
+
+function downloadBill(){
+
+    const billNo = document.getElementById("downloadBillNo").value.trim().toUpperCase();
+
+    if(!billNo){
+        alert("कृपया बिल नंबर डालें");
+        return;
+    }
+
+    // billview page open
+    window.open(`billview.html?billNo=${billNo}`, "_blank");
 }
 </script>
 
