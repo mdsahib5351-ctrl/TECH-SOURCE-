@@ -298,6 +298,12 @@ servicesHTML+=`
 
 }
 
+/* Amount Calculation */
+
+const totalAmount = data.totalAmount || 0;
+const paidAmount = data.paidAmount || 0;
+const dueAmount = totalAmount - paidAmount;
+
 billDetails.innerHTML=`
 
 <p><b>Bill No:</b> ${data.billNo}</p>
@@ -325,52 +331,55 @@ ${servicesHTML}
 
 </table>
 
-<p class="total">Subtotal: ₹${data.subtotal||0}</p>
+${(data.discount||0) > 0 ? `<p class="total">Subtotal: ₹${data.subtotal||0}</p>` : ``}
 
-<p class="total">Discount: ₹${data.discount||0}</p>
+${(data.discount||0) > 0 ? `<p class="total">Discount: ₹${data.discount||0}</p>` : ``}
 
-<p class="total">Total: ₹${data.totalAmount||0}</p>
+<p class="total">Total: ₹${totalAmount}</p>
+
+${paidAmount > 0 ? `<p class="total">Paid: ₹${paidAmount}</p>` : ``}
+
+${paidAmount > 0 ? `<p class="total">Due: ₹${dueAmount}</p>` : ``}
 
 <p><b>Payment Status:</b> ${data.paymentStatus}</p>
 
-<p><b>Payment Mode:</b> ${data.paymentMode}</p>
+${data.paymentMode !== "Unpaid" ? `<p><b>Payment Mode:</b> ${data.paymentMode}</p>` : ``}
 
 `;
+
+/* QR Amount Logic */
+
+let amount;
+
+if(paidAmount <= 0){
+amount = totalAmount;
+}else{
+amount = dueAmount;
+}
 
 /* UPI QR */
 
 const upiId="9661905351@ybl";
-
 const name="TECH SOURCE";
-
-const amount=data.totalAmount||0;
 
 const upiLink=`upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR`;
 
 new QRCode(document.getElementById("qrcode"),{
-
 text:upiLink,
-
 width:120,
-
 height:120
-
 });
 
 /* Paid Stamp */
 
-if(data.paymentStatus==="PAID"){
-
+if(data.paymentStatus==="Paid"){
 document.getElementById("paidStamp").style.display="block";
-
 document.getElementById("qrText").innerHTML="Payment Completed";
-
 }
 
 });
 
 }
-
 /* PDF */
 
 async function downloadPDF(){
