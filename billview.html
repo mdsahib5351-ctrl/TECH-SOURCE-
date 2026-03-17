@@ -8,7 +8,7 @@
 
 body{
 margin:0;
-background:#ffffff;
+background:#d1d1d1;
 font-family:Arial;
 }
 
@@ -20,6 +20,16 @@ margin:auto;
 border-radius:8px;
 }
 
+.billno{
+display:flex;
+gap: 10px;
+align-items:center;
+}
+
+.left{
+display:flex;
+gap:5px; /* Bill No aur value ke bich gap */
+}
 table{
 width:100%;
 border-collapse:collapse;
@@ -54,9 +64,13 @@ cursor:pointer;
 }
 
 .invoice-container{
-width:210mm;
-min-height:297mm;
+width:90%;
+max-width:900px;
 margin:20px auto;
+background:#fff;
+padding:20px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
 }
 
 .outer-border{
@@ -88,33 +102,29 @@ pointer-events:none;
 width:100%;
 }
 
-.qr-container{
-position:relative;
-width:125px;
-}
-
 .paid-stamp{
 position:absolute;
 top:50%;
 left:50%;
 transform:translate(-50%,-50%) rotate(-15deg);
-font-size:26px;
-font-weight:bold;
-color:red;
-border:3px solid red;
-padding:6px 12px;
+
+width:130px;
+height:130px;
+
 display:none;
-background:white;
 }
-.qr-text{
-text-align:center;
-font-size:14px;
-font-weight:bold;
-margin-top:5px;
+
+.paid-stamp img{
+    width:100%;
+    height:100%;
+object-fit:contain;
+opacity:0.9;   /* thoda realistic */
+filter: contrast(120) saturate(120);
+mix-blend-mode: multiply;
 }
 
 .imglogo{
-width:150px;
+    display: flex;
 text-align:center;
 border:1px solid #000;
 padding:5px;
@@ -122,18 +132,33 @@ padding:5px;
 
 @media print{
 
+body{
+background:#fff;
+margin:0;
+}
+
+.invoice-container{
+width:210mm;
+min-height:297mm;
+margin:0;
+padding:10mm;
+box-shadow:none;
+border-radius:0;
+}
+
+.outer-border{
+border:2px solid #000;
+}
+
+.inner-border{
+border:1px solid #000;
+}
+
+/* Button hide */
 .btn{
 display:none;
 }
 
-body{
-background:white;
-}
-
-.invoice-container{
-margin:0;
-width:100%;
-}
 }
 .signature-section{
 display:flex;
@@ -142,12 +167,27 @@ margin-top:70px;
 width:100%;
 }
 
+.qr-wrapper{
+text-align:center;   /* sab center me aa jayega */
+}
+
 .qr-container{
-width:220px;
+    display: flex;
+margin:auto;         /* QR box center */
+border:1px solid #000;
+padding:10px;
+position:relative;
+}
+
+.sign-wrapper{
 text-align:center;
 }
 
-.qr-container #qrcode{
+.imglogo img{
+width:120px;
+height:120px;
+object-fit:contain; /* image stretch nahi hoga */
+display:block;
 margin:auto;
 }
 
@@ -156,19 +196,9 @@ margin-top:8px;
 font-size:14px;
 font-weight:bold;
 }
-
-.imglogo{
-width:220px;
-text-align:center;
-font-size:14px;
-font-weight:bold;
-}
-
-.imglogo img{
-display:block;
-margin:auto;
-margin-bottom:10px;
-width:140px;
+/* sirf neeche */
+.name{
+margin:0px;
 }
 </style>
 
@@ -198,24 +228,27 @@ width:140px;
 
 <div class="signature-section">
 
-<div class="qr-container">
+<div class="qr-wrapper">
 
-<div id="qrcode"></div>
+  <div class="qr-container">
+    <div id="qrcode"></div>
+    <div class="paid-stamp" id="paidStamp">
+  <img src="https://img.sanishtech.com/u/7f719bbb97c14e51f3292a848fa547b7.png" alt="PAID">
+</div>
+  </div>
 
-<div class="paid-stamp" id="paidStamp">PAID</div>
-
-<div class="qr-text" id="qrText">Scan and Pay</div>
+  <div class="qr-text" id="qrText">Scan and Pay</div>
 
 </div>
 
-<div class="imglogo">
+<div class="sign-wrapper">
 
-<img src="https://i.ibb.co/z0kTrtq/IMG-20260226-WA0000-removebg-preview.webp" width="120"><br>
+  <div class="imglogo">
+    <img src="https://i.ibb.co/NdyWNrM1/Chat-GPT-Image-Mar-17-2026-11-03-14-AM.jpg">
+  </div>
 
-Authorized Signature
+  <div class="qr-text">Authorized Signature</div>
 
-</div>
-</div>
 </div>
 </div>
 
@@ -306,11 +339,28 @@ const dueAmount = totalAmount - paidAmount;
 
 billDetails.innerHTML=`
 
-<p><b>Bill No:</b> ${data.billNo}</p>
+<p class="billno">
 
-<p><b>Customer:</b> ${data.customerName}</p>
+  <span class="left">
+    <b>Bill No:</b> ${data.billNo}
+  </span>
+l
+  <span class="date">
+    <b>Date:</b>
+    ${
+    data.date 
+    ? (data.date.toDate 
+        ? new Date(data.date.toDate()).toLocaleDateString('en-GB').replace(/\//g,'-')
+        : new Date(data.date).toLocaleDateString('en-GB').replace(/\//g,'-')
+      )
+    : ""
+    }
+  </span>
 
-<p><b>Mobile:</b> ${data.customerMobile}</p>
+</p>
+
+<p class="name"><b>Name:</b> ${data.customerName}</p>
+<p class="name"><b>Mobile:</b> ${data.customerMobile}</p>
 
 <table>
 
@@ -330,20 +380,66 @@ ${servicesHTML}
 </tbody>
 
 </table>
+<table style="width:100%; margin-top:10px;">
 
-${(data.discount||0) > 0 ? `<p class="total">Subtotal: ₹${data.subtotal||0}</p>` : ``}
+<tr>
 
-${(data.discount||0) > 0 ? `<p class="total">Discount: ₹${data.discount||0}</p>` : ``}
+<td colspan="2" style="border:none; padding:0;">
 
-<p class="total">Total: ₹${totalAmount}</p>
+<div style="display:flex; justify-content:space-between; align-items:flex-end;">
 
-${paidAmount > 0 ? `<p class="total">Paid: ₹${paidAmount}</p>` : ``}
+<!-- LEFT SIDE (Amount Table) -->
+<div style="width:40%;">
+<table style="width:100%; border-collapse:collapse;">
 
-${paidAmount > 0 ? `<p class="total">Due: ₹${dueAmount}</p>` : ``}
+${(data.discount||0) > 0 ? `
+<tr>
+<td>Subtotal</td>
+<td>₹${data.subtotal||0}</td>
+</tr>` : ``}
+
+${(data.discount||0) > 0 ? `
+<tr>
+<td>Discount</td>
+<td>₹${data.discount||0}</td>
+</tr>` : ``}
+
+<tr>
+<td><b>Total</b></td>
+<td><b>₹${totalAmount}</b></td>
+</tr>
+
+${paidAmount > 0 ? `
+<tr>
+<td>Paid</td>
+<td>₹${paidAmount}</td>
+</tr>` : ``}
+
+${paidAmount > 0 ? `
+<tr>
+<td><b>Due</b></td>
+<td><b>₹${dueAmount}</b></td>
+</tr>` : ``}
+
+</table>
+</div>
+
+<!-- RIGHT SIDE (Payment Info) -->
+<div style="width:55%; text-align:right;">
 
 <p><b>Payment Status:</b> ${data.paymentStatus}</p>
 
 ${data.paymentMode !== "Unpaid" ? `<p><b>Payment Mode:</b> ${data.paymentMode}</p>` : ``}
+
+</div>
+
+</div>
+
+</td>
+
+</tr>
+
+</table>
 
 `;
 
