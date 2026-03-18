@@ -336,6 +336,13 @@ servicesHTML+=`
 
 }
 
+/* ✅ YAHI PAR ADD KARO */
+let serviceNames = "";
+
+if(data.services){
+    serviceNames = data.services.map(s => s.name).join(", ");
+}
+
 /* Amount Calculation */
 
 const totalAmount = data.totalAmount || 0;
@@ -517,7 +524,9 @@ function payNow(){
         return;
     }
 
-    const upiLink = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR`;
+    const note = encodeURIComponent(`Bill ${data.billNo} - ${serviceNames}`);
+
+const upiLink = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR&tn=${note}`; 
     window.location.href = upiLink;
 }
 </script>
