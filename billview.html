@@ -200,6 +200,50 @@ font-weight:bold;
 .name{
 margin:0px;
 }
+.qr-popup{
+  position:fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  display:none; /* default hidden */
+
+  justify-content:center;
+  align-items:center;
+
+  background:rgba(0,0,0,0.7);
+  z-index:9999;
+}
+
+.qr-box{
+  background:#fff;
+  padding:30px;
+  border-radius:12px;
+  text-align:center;
+  position:relative;
+
+  width:200px;
+
+  /* ✅ Center fix for any case */
+  transform: translateY(0);
+}
+.close-btn{
+  position:absolute;
+  top:10px;
+  right:10px;
+  font-size: 40px;
+  color: #bb0000;
+  cursor:pointer;
+  transition:0.2s;
+  z-index: 10;
+  text-shadow: 0px 4px 8px rgba(0,0,0,0.5);
+}
+
+.close-btn:hover{
+  transform: scale(1.1);
+  opacity:0.8;
+}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -256,6 +300,21 @@ margin:0px;
 </div>
 <button class="btn" onclick="downloadPDF()">Download PDF</button>
 <button class="btn" onclick="printBill()">Print Bill</button>
+
+<!-- QR POPUP -->
+<div id="qrPopup" class="qr-popup">
+  <div class="qr-box">
+    
+    <span class="close-btn" onclick="closeQR()">×</span>
+
+    <h2>Scan & Pay</h2>
+
+    <div id="bigQR"></div>
+
+    <p id="qrAmountText"></p>
+
+  </div>
+</div>
 <script>
 
 const firebaseConfig={
@@ -271,6 +330,8 @@ const db=firebase.firestore();
 let amount = 0;
 let upiId = "9661905351@ybl";
 let name = "TECH SOURCE";
+let currentData = null;
+let serviceNames = "";
 
 const billDetails=document.getElementById("billDetails");
 
@@ -305,6 +366,7 @@ return;
 }
 
 data=snapshot.data();
+currentData = data;
 
 }else{
 
@@ -314,8 +376,9 @@ return;
 }
 
 data=snapshot.docs[0].data();
-
 }
+
+currentData = data;  // ✅ yahan add karo (common for both cases)
 
 let servicesHTML="";
 
@@ -337,7 +400,7 @@ servicesHTML+=`
 }
 
 /* ✅ YAHI PAR ADD KARO */
-let serviceNames = "";
+serviceNames = "";
 
 if(data.services){
     serviceNames = data.services.map(s => s.name).join(", ");
@@ -524,10 +587,48 @@ function payNow(){
         return;
     }
 
-    const note = encodeURIComponent(`Bill ${data.billNo} - ${serviceNames}`);
+    if(!currentData){
+        alert("Bill data not loaded yet");
+        return;
+    }
 
-const upiLink = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR&tn=${note}`; 
-    window.location.href = upiLink;
+    const note = encodeURIComponent(
+        `Bill ${currentData.billNo} - ${serviceNames}`
+    );
+
+    const upiLink = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR&tn=${note}`;
+
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if(isMobile){
+        window.location.href = upiLink;
+    }else{
+        openQRPopup(); // ✅ desktop me popup open
+    }
+}
+
+function openQRPopup(){
+    const note = encodeURIComponent(
+        `Bill ${currentData.billNo} - ${serviceNames}`
+    );
+
+    const upiLink = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR&tn=${note}`;
+
+    document.getElementById("bigQR").innerHTML = "";
+
+    new QRCode(document.getElementById("bigQR"),{
+        text: upiLink,
+        width:200,
+        height:200
+    });
+
+    document.getElementById("qrAmountText").innerText = `Amount: ₹${amount}`;
+
+    document.getElementById("qrPopup").style.display = "flex";
+}
+
+function closeQR(){
+    document.getElementById("qrPopup").style.display = "none";
 }
 </script>
 
