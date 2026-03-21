@@ -614,7 +614,7 @@ function payNow(){
 
 function openQRPopup(){
     const note = encodeURIComponent(
-        `Bill ${currentData.billNo} - ${serviceNames}`
+        `Bill ${currentData.billNo}`
     );
 
     const upiLink = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR&tn=${note}`;
