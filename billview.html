@@ -600,7 +600,7 @@ function payNow(){
 
     note = encodeURIComponent(`Bill ${currentData.billNo}`);
     
-    const upiLink = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR&tn=${note}`;
+    const upiLink = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}`;
 
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
