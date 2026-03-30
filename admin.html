@@ -585,13 +585,13 @@ function renderTable(bills){
                 <td>${b.customerMobile}</td>
                 <td>${b.paymentMode}</td>
                 <td>₹${due}</td>
-                <td>${b.paymentStatus}</td
+                <td>${b.paymentStatus}</td>
                 <td class="button-group">
-                   <button class="viewBtn" onclick="viewBill('${b.id}')"></button>
-                   <button class="editBtn" onclick="openEditModal('${b.id}')"></button>
-                   <button class="deleteBtn" onclick="deleteBill('${b.id}')"></button>
-                     ${currentTab==='unpaid' ? `<button class="remindBtn" onclick="sendWhatsAppReminder('${b.customerName || ''}', '${b.customerMobile || ''}', '${b.billNo || ''}', '${due}', '${b.id}')"></button>` : ''}
-              </td>
+    <button class="viewBtn" onclick="viewBill('${b.id}')"></button>
+    <button class="editBtn" onclick="openEditModal('${b.id}')"></button>
+    <button class="deleteBtn" onclick="deleteBill('${b.id}')"></button>
+${currentTab==='unpaid' ? `<button class="remindBtn" onclick="sendWhatsAppReminder('${b.customerName || ''}', '${b.customerMobile || ''}', '${b.billNo || ''}', '${due}', '${b.id}')"></button>` : ''}
+        </td>
                 <td>₹${totalAmount}</td>
             </tr>
         `;
