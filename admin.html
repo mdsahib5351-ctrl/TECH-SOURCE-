@@ -550,7 +550,7 @@ let currentTab = 'all'; // all / unpaid
 function renderTable(bills){
     billTable.innerHTML = '';
     let paidCount=0, unpaidCount=0, cashTotal=0, upiTotal=0, dailyTotal=0, monthlyTotal=0, overallTotal=0;
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('en-GB').replace(/\//g,'-');
     const thisMonth = new Date().getMonth();
 
     bills.forEach(b=>{
