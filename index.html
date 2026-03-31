@@ -388,6 +388,45 @@ z-index:9999;
   animation: l18 2s infinite linear;
 }
 
+  .youtubesearche-container {
+    background-color: #ebf3eb;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#search {
+  padding: 8px;
+  flex-grow: 1;
+  max-width: 200px;
+  max-height: 20px;
+  border: 1px solid #bb0000;
+  border-radius: 4px;
+}
+
+h6 {
+    color: white;
+    background-color: #f00;
+    display: inline-block;
+    padding: 3px 9px;
+    font-size: 15px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    margin-top: 8px;
+}
+
+.searchbtn {
+  cursor: pointer;
+  width: 80px;
+  height: 25px;
+  background-color: #f00;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
 @keyframes l18 {
 0%   {clip-path:polygon(50% 50%,0 0,0 0,0 0,0 0,0 0)}
 25%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 0,100% 0,100% 0)}
@@ -439,6 +478,12 @@ z-index:9999;
 </select>
 </nav>
 </header>
+
+     <h6>YouTube Search</h6>
+   <div class="youtubesearche-container">
+    <input type="text" id="search" placeholder="Search videos...">
+    <button class="searchbtn" id="search-btn">Search</button>
+  </div>
 
 <section class="hero" id="home">
 <h1>Ultimate Mini App Website</h1>
@@ -746,6 +791,24 @@ billInput.addEventListener("input", function(){
 
     billInput.value = formatted;
 });
+      function searchYouTube() {
+        const query = encodeURIComponent(searchInput.value);
+
+        if (!query) {
+            alert("कुछ लिखो पहले!");
+            return;
+        }
+
+        window.open(`https://www.youtube.com/results?search_query=${query}`, "_blank");
+    }
+
+    searchBtn.addEventListener("click", searchYouTube);
+
+    searchInput.addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+            searchYouTube();
+        }
+    });
 </script>
 
 </body>
