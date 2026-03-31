@@ -724,6 +724,28 @@ function downloadBill(){
     // billview page open
     window.open(`billview.html?billNo=${billNo}`, "_blank");
 }
+  const billInput = document.getElementById("downloadBillNo");
+
+billInput.addEventListener("input", function(){
+
+    // TS/ hata ke sirf number lo
+    let value = billInput.value.replace(/^TS\//i, "").replace(/\D/g, "");
+
+    // max 8 digit
+    value = value.substring(0,8);
+
+    let formatted = "TS/";
+
+    if(value.length > 0){
+        formatted += value.substring(0,4);
+    }
+
+    if(value.length > 4){
+        formatted += "/" + value.substring(4,8);
+    }
+
+    billInput.value = formatted;
+});
 </script>
 
 </body>
