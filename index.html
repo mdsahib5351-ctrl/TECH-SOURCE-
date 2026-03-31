@@ -513,28 +513,12 @@ h6 {
 <p>If you have any questions or service requests, feel free to contact us.</p>
 
 <div class="contact-box">
-📞 Phone: <a href="tel:+919661905351">Make a Call</a>
-</div>
-
-<div class="contact-box">
 📧 Email: <a href="mailto:mdsahib5351@gmail.com">Male a mail</a>
 </div>
 
 <div class="contact-box">
 💬 WhatsApp: <a href="https://wa.me/+919661905351">Chat Now</a>
 </div>
-<div class="contact-box">
-  📜 About Us: <a href="about.html">About Us</a>
-  </div>
- <div class="contact-box">
-  📜 Terms & Conditions: <a href="terms.html">Terms & Conditions</a>
-  </div>
- <div class="contact-box">
-  📜 Privacy Policy: <a href="privacy.html">Privacy Policy</a>
-  </div>
- <div class="contact-box">
-  ❌ Refund Policy: <a href="refund.html">Refund Policy</a>
-  </div>
 
 <div class="contact-box">
 📍 Location: Amarpur, Bihar, India
@@ -577,7 +561,7 @@ h6 {
 </section>
 
 <footer>
-  © 2026 UltimateMiniApp <br><br>
+  © TECH SOURCE CEO<br><br>
 
   <a href="about.html">About Us</a> |
   <a href="terms.html">Terms & Conditions</a> |
@@ -668,17 +652,12 @@ document.getElementById("loader").style.display="none";
 });
 
 function openDownloadBill(){
-
-    // सारे sections hide
     document.querySelectorAll("section").forEach(sec=>{
         sec.style.display="none";
     });
-
-    // सिर्फ download-bill show
     document.getElementById("download-bill").style.display="block";
 }
 // Firebase collection: 'bills'
-// ध्यान: तुम्हारा Firebase config पहले से loaded होना चाहिए
 
 function downloadBill(){
 
