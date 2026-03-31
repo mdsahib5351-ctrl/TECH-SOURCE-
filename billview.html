@@ -576,6 +576,10 @@ document.getElementById("payBtn").style.display="none";
 
 async function downloadPDF(){
 
+// 🔴 Step 1: Sab button hide karo
+const buttons = document.querySelectorAll(".btn");
+buttons.forEach(btn => btn.style.display = "none");
+
 const invoice=document.getElementById("invoice");
 
 const canvas=await html2canvas(invoice,{
@@ -596,7 +600,10 @@ pdf.addImage(imgData,"JPEG",0,0,pdfWidth,pdfHeight);
 
 pdf.save("bill.pdf");
 
-}
+// 🔵 Step 2: Wapas show karo
+buttons.forEach(btn => btn.style.display = "inline-block");
+
+    }
 
 /* Print */
 
