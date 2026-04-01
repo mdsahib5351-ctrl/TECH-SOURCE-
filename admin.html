@@ -421,6 +421,7 @@ transform:scale(1.05);
  <div class="tabbutton">
 <button class="tabBtn active" onclick="switchTab('all', this)">All Bills</button>
 <button class="tabBtn" onclick="switchTab('unpaid', this)">Unpaid Bills</button>
+<button class="tabBtn" onclick="switchTab('panlist', this)">Pan Applications</button>
 <button class="tabBtn" onclick="window.open('generatebill.html')">Generated Bills</button> 
 <button class="tabBtn" onclick="logout()">Logout</button>
 </div>
@@ -482,6 +483,57 @@ transform:scale(1.05);
     <div class="modal-buttons">
         <button onclick="saveEdit()">Save</button>
         <button onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="panEditModal">
+  <div class="modal">
+    <h3>Edit PAN Application</h3>
+
+    <input type="text" id="panName" placeholder="Name">
+    
+    <select id="panGender">
+        <option>Male</option>
+        <option>Female</option>
+    </select>
+
+    <select id="panStatus">
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+        <option value="under proccess">Under proccess</option>
+    </select>
+
+    <div class="modal-buttons">
+        <button onclick="savePanEdit()">Save</button>
+        <button onclick="closePanModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="panStatusEditModal">
+  <div class="modal">
+    <h3>Update PAN Status</h3>
+
+    <select id="panEditStatus">
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+        <option value="under proccess">Under proccess</option>
+    </select>
+
+    <select id="panRemarkSelect" onchange="fillRemark()">
+    <option value="">-- Select Remark --</option>
+        <option value="Application is under process at Income Tax Department">Application is under process at Income Tax Department</option>
+        <option value="Your application is withheld for some reasons">Your application is withheld for some reasons</option>
+        <option value="APPLICATION IS UNDER OBJECTION CLEARANCE. PLEASE UPLOAD THE REVISED DOCUMENTS (SCANNED IMAGES).">APPLICATION IS UNDER OBJECTION CLEARANCE. PLEASE UPLOAD THE REVISED DOCUMENTS (SCANNED IMAGES).</option>
+    <option value="Approved successfully">Approved successfully</option>
+</select>
+
+    <input type="text" id="panEditRemark" placeholder="Enter Remark (optional)">
+
+    <div class="modal-buttons">
+        <button onclick="savePanStatusEdit()">Save</button>
+        <button onclick="closePanStatusEdit()">Cancel</button>
     </div>
   </div>
 </div>
@@ -662,9 +714,44 @@ function clearFilters(){
 // ========================
 function switchTab(tab, btn){
     currentTab = tab;
+
+    // active button change
     document.querySelectorAll('.tabBtn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
-    loadBills();
+
+    // 🔥 PAN tab ke liye header change
+    if(tab === 'panlist'){
+        document.querySelector('thead').innerHTML = `
+            <tr>
+                <th>Ack No</th>
+                <th>Name</th>
+                <th>Gender</th>
+                <th>Satus</th>
+                <th>Docs</th>
+                <th>Action</th>
+            </tr>
+        `;
+
+        loadPanApplications(); // PAN data load
+    }
+    else{
+        // 🔥 normal bills header wapas
+        document.querySelector('thead').innerHTML = `
+            <tr>
+                <th>Bill No</th>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Payment Mode</th>
+                <th>Due</th>
+                <th>Status</th>
+                <th>Action</th>
+                <th>Total</th>
+            </tr>
+        `;
+
+        loadBills(); // normal bills load
+    }
 }
 
 function deleteBill(docId){
@@ -794,6 +881,159 @@ https://mdsahib5351-ctrl.github.io/TECH-SOURCE-/billview.html?id=${docId}
 
 function viewBill(docId){
     window.open(`billview.html?id=${docId}`, '_blank');
+}
+
+function loadPanApplications(){
+    db.collection('applications')
+    .orderBy('createdAt','desc')
+    .onSnapshot(snapshot=>{
+
+        let html = '';
+
+        snapshot.forEach(doc=>{
+            let d = doc.data();
+
+            html += `
+            <tr>
+                <td>${d.ackNo || '-'}</td>
+                <td class="customerLink" onclick="viewPan('${doc.id}')">${d.name}</td>
+                <td>${d.gender}</td>
+                <td class="customerLink" onclick="openPanStatusEdit('${doc.id}', '${d.status || 'pending'}', '${d.remark || ''}')">
+    ${d.status}
+</td>
+                <td>
+                    <button onclick="window.open('${d.photo}')">Photo</button>
+                    <button onclick="window.open('${d.aadhaarFront}')">Aadhaar</button>
+                </td>
+                <td>
+                    <button onclick="openPanView('${doc.id}')">View</button>
+                    <button onclick="editPan('${doc.id}')">Edit</button>
+                    <button onclick="deletePan('${doc.id}')">Delete</button>
+                </td>
+            </tr>
+            `;
+        });
+
+        billTable.innerHTML = html;
+    });
+}
+function viewPan(docId){
+    db.collection('applications').doc(docId).get().then(doc=>{
+        let d = doc.data();
+
+        alert(
+`ACK: ${d.ackNo}
+
+Name: ${d.name}
+Gender: ${d.gender}
+
+Status: ${d.status}
+
+Photo:
+${d.photo}
+
+Aadhaar Front:
+${d.aadhaarFront}
+
+Aadhaar Back:
+${d.aadhaarBack}
+
+Signature:
+${d.signature}`
+        );
+    });
+}
+
+
+function openPanView(docId){
+    window.open(`panview.html?id=${docId}`, '_blank');
+}
+
+let currentPanId = null;
+
+function editPan(docId){
+    currentPanId = docId;
+
+    db.collection('applications').doc(docId).get().then(doc=>{
+        let d = doc.data();
+
+        document.getElementById('panName').value = d.name || '';
+        document.getElementById('panGender').value = d.gender || 'Male';
+        document.getElementById('panStatus').value = d.status || 'pending';
+
+        document.getElementById('panEditModal').style.display = 'flex';
+    });
+}
+
+function closePanModal(){
+    document.getElementById('panEditModal').style.display = 'none';
+}
+
+function deletePan(docId){
+    if(confirm("Are you sure you want to delete this PAN application?")){
+        db.collection('applications').doc(docId).delete().then(()=>{
+            alert("PAN Application Deleted Successfully!");
+        }).catch(err=>{
+            alert("Error: "+err.message);
+        });
+    }
+}
+
+function savePanEdit(){
+    if(!currentPanId) return;
+
+    let name = document.getElementById('panName').value;
+    let gender = document.getElementById('panGender').value;
+    let status = document.getElementById('panStatus').value;
+
+    db.collection('applications').doc(currentPanId).update({
+        name,
+        gender,
+        status
+    }).then(()=>{
+        alert("Updated ✅");
+        closePanModal();
+        loadPanApplications();
+    });
+}
+let currentPanStatusId = null;
+
+function openPanStatusEdit(docId, currentStatus, remark){
+    currentPanStatusId = docId;
+
+    document.getElementById('panEditStatus').value = currentStatus || 'pending';
+    document.getElementById('panEditRemark').value = remark || '';
+
+    document.getElementById('panStatusEditModal').style.display = 'flex';
+}
+
+function closePanStatusEdit(){
+    document.getElementById('panStatusEditModal').style.display = 'none';
+}
+function savePanStatusEdit(){
+    if(!currentPanStatusId) return;
+
+    const status = document.getElementById('panEditStatus').value;
+    const remark = document.getElementById('panEditRemark').value.trim();
+
+    db.collection('applications').doc(currentPanStatusId).update({
+        status: status,
+        remark: remark
+    })
+    .then(()=>{
+        alert("Status Updated ✅");
+        closePanStatusEdit();
+    })
+    .catch(err=>{
+        alert("Error: " + err.message);
+    });
+}
+function fillRemark(){
+    let selected = document.getElementById("panRemarkSelect").value;
+
+    if(selected){
+        document.getElementById("panEditRemark").value = selected;
+    }
 }
 </script>
 </body>
