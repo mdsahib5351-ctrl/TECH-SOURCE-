@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel - TECH SOURCE</title>
+    <link rel="stylesheet" href="../css/admin.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <!-- JS -->
+    <script src="../script/admin.js" defer></script>
+<body>
+    <h2>TECH SOURCE - Bills</h2>
+    <div class="top-controls">
+
+<input placeholder="search by mobile number" type="text" id="searchMobile" onkeyup="loadBills()">
+
+<input placeholder="search by bill number" type="text" id="searchBill" onkeyup="loadBills()">
+<input type="date" id="dateFilter" onchange="loadBills()">
+<button class="clear" onclick="clearFilters()"></button>
+<button class="homebtn" onclick="window.open('index.html')"></button>
+</div>
+<!-- TAB BUTTONS -->
+ <div class="tabbutton">
+<button class="tabBtn active" onclick="switchTab('all', this)">All Bills</button>
+<button class="tabBtn" onclick="switchTab('unpaid', this)">Unpaid Bills</button>
+<button class="tabBtn" onclick="switchTab('panlist', this)">Pan Applications</button>
+<button class="tabBtn" onclick="window.open('generatebill.html')">Generated Bills</button> 
+<button class="tabBtn" onclick="logout()">Logout</button>
+</div>
+<div class="myhistory">
+    <div class="income">
+        <h3>Paid Bills: <span id="paidCount">0</span></h3>
+        <h3>Unpaid Bills: <span id="unpaidCount">0</span></h3>
+        <h3>Cash Total: ₹ <span id="cashTotal">0</span></h3>
+        <h3>UPI Total: ₹ <span id="upiTotal">0</span></h3>
+    </div>
+
+    <div class="incomea">
+        <h3>Daily Income: ₹ <span id="dailyTotal">0</span></h3>
+        <h3>Monthly Income: ₹ <span id="monthlyTotal">0</span></h3>
+        <h3>Total Income: ₹ <span id="overallTotal">0</span></h3>
+    </div>
+</div>
+<table>
+<thead>
+<tr>
+<th>Bill No</th>
+<th>Date</th>
+<th>Name</th>
+<th>Mobile</th>
+<th>Payment Mode</th>
+<th>Due</th>
+<th>Status</th>
+<th>Action</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody id="billTable"></tbody>
+</table>
+    <div id="billList"></div>
+    <!-- Edit Modal -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <h3>Edit Bill</h3>
+
+    <input type="text" id="editCustomerName" placeholder="Customer Name">
+    <input type="text" id="editCustomerMobile" placeholder="Customer Mobile">
+    <input type="number" id="editSubtotal" placeholder="Subtotal" readonly>
+    <input type="number" id="editPaidAmount" placeholder="Paid Amount">
+    <input type="number" id="editDiscount" placeholder="Discount">
+    <input type="number" id="editTotal" placeholder="Final Total" readonly>
+
+    <select id="editPaymentMode">
+        <option value="Cash">Cash</option>
+        <option value="UPI">UPI</option>
+        <option value="Bank">Bank</option>
+        <option value="Unpaid">Unpaid</option>
+    </select>
+
+    <select id="editPaymentStatus">
+        <option value="Paid">Paid</option>
+        <option value="Unpaid">Unpaid</option>
+    </select>
+
+    <div class="modal-buttons">
+        <button onclick="saveEdit()">Save</button>
+        <button onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="panEditModal">
+  <div class="modal">
+    <h3>Edit PAN Application</h3>
+
+    <input type="text" id="panName" placeholder="Name">
+    
+    <select id="panGender">
+        <option>Male</option>
+        <option>Female</option>
+    </select>
+
+    <select id="panStatus">
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+        <option value="under proccess">Under proccess</option>
+    </select>
+
+    <div class="modal-buttons">
+        <button onclick="savePanEdit()">Save</button>
+        <button onclick="closePanModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="panStatusEditModal">
+  <div class="modal">
+    <h3>Update PAN Status</h3>
+
+    <select id="panEditStatus">
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+        <option value="under proccess">Under proccess</option>
+    </select>
+
+    <select id="panRemarkSelect" onchange="fillRemark()">
+    <option value="">-- Select Remark --</option>
+        <option value="Application is under process at Income Tax Department">Application is under process at Income Tax Department</option>
+        <option value="Your application is withheld for some reasons">Your application is withheld for some reasons</option>
+        <option value="APPLICATION IS UNDER OBJECTION CLEARANCE. PLEASE UPLOAD THE REVISED DOCUMENTS (SCANNED IMAGES).">APPLICATION IS UNDER OBJECTION CLEARANCE. PLEASE UPLOAD THE REVISED DOCUMENTS (SCANNED IMAGES).</option>
+    <option value="Approved successfully">Approved successfully</option>
+</select>
+
+    <input type="text" id="panEditRemark" placeholder="Enter Remark (optional)">
+
+    <div class="modal-buttons">
+        <button onclick="savePanStatusEdit()">Save</button>
+        <button onclick="closePanStatusEdit()">Cancel</button>
+    </div>
+  </div>
+</div>
