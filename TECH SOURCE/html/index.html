@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TECH SOURCE HOME PAGE</title>
+<meta name="description" content="Tech Source Fast And Easy Services Provider and Multipel Service Collect">
+
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/index.css">
+    
+    <!-- Firebase -->
+    <script src="https://unpkg.com/qr-code-styling/lib/qr-code-styling.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- JS -->
+    <script src="../script/index.js" defer></script>
+</head>
+<body>
+    <!-- ULTRA PRO LOADER -->
+<div id="loader">
+<div class="loader"></div>
+</div>
+
+<header>
+<div class="logo">Tech Source</div>
+
+
+<div class="hamburger" onclick="toggleMenu()">
+<div></div><div></div><div></div>
+</div>
+
+<nav id="navMenu">
+<a href="#home">Home</a>
+
+<div class="nav-item">
+<a href="javascript:void(0)" onclick="toggleServices()">Services ▾</a>
+<div class="dropdown" id="servicesDropdown">
+<a href="pan-service.html">PAN Card Service</a>
+<a href="aadhaar-service.html">Aadhaar Card Service</a>
+<a href="ration-service.html">Ration Card Service</a>
+<a href="#">Money Transfer</a>
+<a href="#">Recharge & Bill Pay</a>
+<a href="#">Document Services</a>
+</div>
+</div>
+<a href="#contact">Contact</a>
+<button class="btn" onclick="toggleDark()">🌙</button>
+</nav>
+</header>
+
+     <h6>YouTube Search</h6>
+   <div class="youtubesearche-container">
+    <input type="text" id="search" placeholder="Search videos...">
+    <button class="searchbtn" id="search-btn">Search</button>
+  </div>
+
+<section class="hero" id="home">
+<h1>Tech Source</h1>
+<p>Tech Source Fast And Easy Services Provider and Multipel Service Collect</p>
+</section>
+
+<section id="services">
+ <div class="section-title">Our Premium Services</div> <div class="cards"> 
+     <div class="card"><h3>PAN Card Service</h3><p>New PAN, Minor PAN, Correction & Reprint.</p><a href="pan-service.html" class="btn">Click</a></div>
+     <div class="card"><h3>Aadhaar Card Service</h3><p>Address, C/O & Mobile Update.</p><a href="aadhaar-service.html" class="btn">Click</a></div> 
+     <div class="card"><h3>Ration Card Service</h3><p>New Apply, Add/Remove Member.</p><a href="ration-service.html" class="btn">Click</a></div>
+     <div class="card"><h3>Bill Genrate</h3><p>bill genrate and print.</p><a href="generatebill.html" class="btn">Click</a></div>
+     <div class="card"><h3>Bill History</h3><p>get all bill history.</p><a href="admin.html" class="btn">Click</a></div>
+     <div class="card"><h3>Download Bill</h3><p>Enter bill number and download your bill download.</p><a onclick="openDownloadBill()" class="btn">Click</a></div> 
+     <div class="card"><h3>Image To Link</h3><p>Upload image typy jpg,jpeg,png and more get link easy and fast.</p><a href="image.html" class="btn">Click</a></div>
+     <div class="card"><h3>Reedem Code Print</h3><p>Reedem Code Print Perfect A6 Paper Size.</p><a href="reedemprint.html" class="btn">Click</a></div> 
+     <div class="card"><h3>Result</h3><p>See Your Matric Result Easy and Fast</p><a href="result.html" class="btn">Click</a></div>
+    </div> 
+</section>
+<section id="download-bill" style="display: none;">
+  <div class="section-title">Download Bill</div>
+
+  <div style="max-width:400px;margin:auto;text-align:center">
+    <input type="text" id="downloadBillNo" placeholder="Enter Bill Number (example: TS/0000/YYYY)">
+    <button class="btn" onclick="downloadBill()">Download Bill</button>
+  </div>
+</section>
+
+<section id="contact">
+
+<div class="section-title">Contact Us</div>
+
+<div class="contact-container">
+
+<!-- LEFT INFO -->
+
+<div class="contact-info">
+
+<h3>Get In Touch</h3>
+
+<p>If you have any questions or service requests, feel free to contact us.</p>
+
+<div class="contact-box">
+📧 Email: <a href="mailto:mdsahib5351@gmail.com">Male a mail</a>
+</div>
+
+<div class="contact-box">
+💬 WhatsApp: <a href="https://wa.me/+919661905351">Chat Now</a>
+</div>
+
+<div class="contact-box">
+📍 Location: Amarpur, Bihar, India
+</div>
+
+</div>
+
+
+<!-- FORM -->
+
+<form id="contactForm" class="contact-form">
+
+<input type="text" name="name" placeholder="Your Name" required>
+
+<input type="email" name="email" placeholder="Your Email" required>
+
+<textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+
+<input type="text" name="_gotcha" style="display:none">
+
+<button type="submit" class="btn" id="sendBtn">Send Message</button>
+
+<div id="formStatus"></div>
+
+</form>
+
+</div>
+
+
+<!-- GOOGLE MAP -->
+
+<div class="map">
+
+  <iframe
+    src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3616.413705428625!2d86.88249227537496!3d24.986054677847463!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMjTCsDU5JzA5LjgiTiA4NsKwNTMnMDYuMiJF!5e0!3m2!1sen!2sin!4v1773753963904!5m2!1sen!2sin"
+    width="100%" height="300" style="border:0;" loading="lazy"></iframe></iframe>
+
+</div>
+
+</section>
+
+<footer>
+  © TECH SOURCE CEO<br><br>
+
+  <a href="about.html">About Us</a> |
+  <a href="terms.html">Terms & Conditions</a> |
+  <a href="privacy.html">Privacy Policy</a> |
+  <a href="refund.html">Refund Policy</a> |
+  <a href="#contact">Contact</a>
+</footer>
+</body>
+</html>

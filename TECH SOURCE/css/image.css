@@ -1,0 +1,25 @@
+body{
+font-family:Arial;
+background:#f2f2f2;
+text-align:center;
+padding:30px;
+transition:0.3s;
+}
+
+.dark{background:#121212;color:white;}
+.box{background:white;padding:25px;width:500px;margin:auto;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.2);}
+.dark .box{background:#1e1e1e;color:white;}
+.menu{margin-bottom:15px;}
+.menu button{padding:8px 15px;margin:3px;cursor:pointer;}
+.tab{display:none;}
+.tab.active{display:block;}
+.drop{border:2px dashed #999;padding:30px;border-radius:10px;cursor:pointer;}
+.preview{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px;justify-content:center;}
+.card{position:relative;border:1px solid #ddd;padding:5px;border-radius:8px;}
+.card img{width:90px;height:90px;object-fit:cover;border-radius:5px;}
+.delete{position:absolute;top:-6px;right:-6px;background:red;color:white;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;}
+.progress{height:6px;background:#ddd;margin-top:5px;border-radius:5px;overflow:hidden;}
+.bar{height:100%;width:0%;background:#28a745;}
+.link-box{margin-top:5px;display:flex;align-items:center;gap:5px;}
+.link-box input{flex:1;padding:4px;}
+.history img{width:50px;margin:3px;border-radius:5px;}
