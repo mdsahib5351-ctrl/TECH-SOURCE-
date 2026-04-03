@@ -326,7 +326,7 @@ _This is a reminder that the above-mentioned bill has a pending amount(₹${dueA
 _आप भुगतान इस लिंक पर क्लिक करके आसानी से कर सकते हैं_ */* _You can make the payment by clicking here:_
  
  *🢃Pay Now🢃*
-https://mdsahib5351-ctrl.github.io/TECH-SOURCE-/billview.html?id=${docId}
+https://mdsahib5351-ctrl.github.io/tech_source/billview.html?id=${docId}
 
 ~यदि आपने पहले ही भुगतान कर दिया है, तो कृपया इसे अनदेखा करें।~
 ~If you have already made the payment, please ignore this message.~
