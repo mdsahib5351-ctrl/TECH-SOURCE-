@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pro Admin Panel</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#020617;
+    color:#fff;
+}
+
+.header{
+    background:#111827;
+    padding:15px;
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.container{padding:20px}
+
+.card{
+    background:#1e293b;
+    padding:15px;
+    margin-bottom:15px;
+    border-radius:10px;
+}
+
+.status{
+    padding:4px 10px;
+    border-radius:6px;
+}
+
+.pending{background:orange;}
+.payment_submitted{background:blue;}
+.approved{background:green;}
+.rejected{background:red;}
+
+.btn{
+    padding:6px 10px;
+    border:none;
+    border-radius:6px;
+    color:#fff;
+    margin:5px;
+    cursor:pointer;
+}
+
+.approve{background:#22c55e;}
+.reject{background:#ef4444;}
+.delete{background:#eab308;}
+</style>
+</head>
+
+<body>
+
+<div class="header">🧑‍💼 PRO Admin Panel</div>
+
+<div class="container">
+
+<!-- 📢 Announcement -->
+<h3>📢 Update Announcement</h3>
+<input id="announceInput" placeholder="Enter announcement..." style="width:100%;padding:10px">
+<button class="btn approve" onclick="updateAnnouncement()">Update</button>
+
+<hr>
+
+<!-- 🏏 Teams -->
+<h3>🏏 All Teams</h3>
+<div id="list"></div>
+
+</div>
+<script>
+
+// Firebase config
+const firebaseConfig = {
+
+  apiKey: "AIzaSyD8-Rw3iwc5XXMCvzZt8j8fX7Z-F6nGMMc",
+  authDomain: "ts-gaming-8ef00.firebaseapp.com",
+  databaseURL: "https://ts-gaming-8ef00-default-rtdb.firebaseio.com",
+  projectId: "ts-gaming-8ef00",
+  storageBucket: "ts-gaming-8ef00.firebasestorage.app",
+  messagingSenderId: "622265302154",
+  appId: "1:622265302154:web:6feb931ea5619a9ed60173",
+  measurementId: "G-1JQRZNGWYT"
+
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// 📢 Update Announcement
+function updateAnnouncement(){
+    const text = document.getElementById("announceInput").value;
+
+    db.collection("settings").doc("announcement").set({
+        text: text
+    });
+
+    alert("Announcement Updated");
+}
+
+// 🔄 Load Teams (safe order)
+db.collection("tournament")
+.orderBy("time","desc")
+.onSnapshot(snapshot => {
+
+    let html = "";
+
+    snapshot.forEach(doc => {
+
+        const d = doc.data();
+
+        html += `
+        <div class="card">
+
+            <b>🏏 ${d.team}</b><br><br>
+
+            👤 Captain: ${d.captain}<br>
+            📞 Mobile: ${d.mobile}<br>
+            📍 Place: ${d.place}<br><br>
+
+            Status: <span class="status ${d.status}">${d.status}</span><br>
+
+            ${d.status === 'payment_submitted' ? `
+                <button class="btn approve" onclick="approve('${doc.id}')">Approve</button>
+                <button class="btn reject" onclick="reject('${doc.id}')">Reject</button>
+                <button class="btn delete" onclick="deleteDoc('${doc.id}')">Delete</button>
+            ` : ''}
+
+        </div>
+        `;
+    });
+
+    document.getElementById("list").innerHTML = html;
+
+});
+
+// ✅ Approve
+function approve(id){
+    db.collection("tournament").doc(id).update({
+        status: "approved"
+    });
+}
+
+// ❌ Reject
+function reject(id){
+    db.collection("tournament").doc(id).update({
+        status: "rejected"
+    });
+}
+
+// X delete
+function deleteDoc(id){
+    if(confirm("Delete this team?")){
+        db.collection("tournament").doc(id).delete();
+    }
+}
+</script>
+
+</body>
+</html>
