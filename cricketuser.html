@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tournament User Panel</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#0f172a;
+    color:#fff;
+}
+
+.banner{
+    height:200px;
+    background:url('https://images.unsplash.com/photo-1540747913346-19e32dc3e97e') center/cover;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:26px;
+    font-weight:bold;
+}
+
+.container{padding:20px}
+
+input{
+    width:100%;
+    padding:10px;
+    margin:6px 0;
+    border:none;
+    border-radius:6px;
+}
+
+.btn{
+    width:100%;
+    padding:10px;
+    background:#22c55e;
+    border:none;
+    border-radius:6px;
+    color:#fff;
+    margin-top:5px;
+    cursor:pointer;
+}
+
+.box{
+    background:#1e293b;
+    padding:15px;
+    margin-top:15px;
+    border-radius:10px;
+    text-align:center;
+}
+
+.team{
+    padding:8px;
+    border-bottom:1px solid #333;
+}
+</style>
+</head>
+
+<body>
+
+<div class="banner">🏏 Cricket Tournament 2026</div>
+
+<div class="container">
+
+<!-- ⏳ Countdown -->
+<h3>⏳ Match Start In:</h3>
+<div id="timer" style="display: none;"></div>
+
+<!-- 📢 Announcement -->
+<h3>📢 Announcement</h3>
+<div id="announce" class="box">Loading...</div>
+
+<!-- 📝 Join Form -->
+<h3>Join Tournament</h3>
+<input type="text" id="team" placeholder="Team Name">
+<input type="text" id="captain" placeholder="Captain Name">
+<input type="number" id="mobile" placeholder="Mobile Number">
+<input type="text" id="place" placeholder="Place">
+
+<button class="btn" onclick="joinNow()">Join & Pay</button>
+
+<!-- 💰 Payment -->
+<div id="payBox" class="box" style="display:none">
+    <h4>Pay Entry Fee ₹799</h4>
+    <img id="qr" width="200"><br><br>
+    <p>Pay: <b>Pay And Click Payment Done Button</b></p>
+    <button class="btn" onclick="markPaid()">Payment Done ✅</button>
+</div>
+
+<!-- 🏆 Approved Teams -->
+<h3>🏆 Approved Teams</h3>
+<div id="teams" class="box"></div>
+
+</div>
+
+<script>
+
+// 🔥 Firebase config (same admin wala)
+const firebaseConfig = {
+
+  apiKey: "AIzaSyD8-Rw3iwc5XXMCvzZt8j8fX7Z-F6nGMMc",
+  authDomain: "ts-gaming-8ef00.firebaseapp.com",
+  databaseURL: "https://ts-gaming-8ef00-default-rtdb.firebaseio.com",
+  projectId: "ts-gaming-8ef00",
+  storageBucket: "ts-gaming-8ef00.firebasestorage.app",
+  messagingSenderId: "622265302154",
+  appId: "1:622265302154:web:6feb931ea5619a9ed60173",
+  measurementId: "G-1JQRZNGWYT"
+
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let currentId = null;
+
+// 📝 Join
+function joinNow(){
+
+    const team = document.getElementById('team').value;
+    const captain = document.getElementById('captain').value;
+    const mobile = document.getElementById('mobile').value;
+    const place = document.getElementById('place').value;
+
+    if(!team || !captain || !mobile || !place){
+        alert("Sab field fill karo");
+        return;
+    }
+
+    db.collection('tournament').add({
+        team,
+        captain,
+        mobile,
+        place,
+        status: "pending",
+        time: new Date()
+    })
+    .then(doc => {
+
+        currentId = doc.id;
+
+        // UPI QR
+        const upi = "upi://pay?pa=mdshaklain36@okhdfcbank&pn=Cricket Tournament&am=799&cu=INR";
+
+        const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(upi);
+
+        document.getElementById('qr').src = qrUrl;
+        document.getElementById('payBox').style.display = "block";
+
+    });
+
+}
+
+// 💰 Payment Done
+function markPaid(){
+    if(currentId){
+        db.collection('tournament').doc(currentId).update({
+            status: "payment_submitted"
+        });
+        alert("Payment Submitted ✅ Wait for approval");
+    }
+}
+
+// 🏆 Approved Teams
+db.collection('tournament')
+.where("status","==","approved")
+.onSnapshot(snapshot => {
+
+    let html = "";
+
+    snapshot.forEach(doc => {
+        const d = doc.data();
+        html += `<div class=\"team\">🏏 ${d.team}</div>`;
+    });
+
+    document.getElementById("teams").innerHTML = html;
+
+});
+
+// ⏳ Countdown Timer
+const targetDate = new Date("2026-05-01T10:00:00");
+
+setInterval(() => {
+    const now = new Date();
+    const diff = targetDate - now;
+
+    const d = Math.floor(diff / (1000*60*60*24));
+    const h = Math.floor(diff / (1000*60*60)) % 24;
+    const m = Math.floor(diff / (1000*60)) % 60;
+
+    document.getElementById("timer").innerHTML = `${d}d ${h}h ${m}m`;
+}, 1000);
+
+// 📢 Announcement
+db.collection("settings")
+.doc("announcement")
+.onSnapshot(doc => {
+    if(doc.exists){
+        document.getElementById("announce").innerText = doc.data().text;
+    }
+});
+
+</script>
+
+</body>
+</html>
