@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Match Schedule</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#020617;
+    color:#fff;
+    padding:20px;
+}
+
+h2{
+    text-align:center;
+}
+
+/* 📦 Match Card */
+.card{
+    background:#1e293b;
+    padding:15px;
+    margin-top:15px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.5);
+}
+
+.match{
+    margin-bottom:10px;
+}
+
+.team{
+    font-size:18px;
+    font-weight:bold;
+    color:#22c55e;
+}
+
+.info{
+    font-size:14px;
+    margin-top:5px;
+}
+
+/* 🔙 Back Button */
+.btn{
+    padding:10px;
+    background:#22c55e;
+    border:none;
+    border-radius:6px;
+    color:#fff;
+    cursor:pointer;
+    margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>📅 Match Schedule</h2>
+
+<button class="btn" onclick="goBack()">⬅ Back</button>
+
+<div id="list"></div>
+<h3>🏆 Leaderboard</h3>
+<div id="leaderboard" class="card"></div>
+
+<script>
+
+// 🔥 Firebase config (same)
+const firebaseConfig = {
+
+  apiKey: "AIzaSyD8-Rw3iwc5XXMCvzZt8j8fX7Z-F6nGMMc",
+  authDomain: "ts-gaming-8ef00.firebaseapp.com",
+  databaseURL: "https://ts-gaming-8ef00-default-rtdb.firebaseio.com",
+  projectId: "ts-gaming-8ef00",
+  storageBucket: "ts-gaming-8ef00.firebasestorage.app",
+  messagingSenderId: "622265302154",
+  appId: "1:622265302154:web:6feb931ea5619a9ed60173",
+  measurementId: "G-1JQRZNGWYT"
+
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// 🔄 Load Schedule
+db.collection("matches")
+.orderBy("date","asc")
+.onSnapshot(snapshot => {
+
+    let html = "";
+
+    snapshot.forEach(doc => {
+
+        const d = doc.data();
+
+        html += `
+        <div class="card">
+
+            <div class="team">🏏 ${d.team1} vs ${d.team2}</div>
+
+            <div class="info">
+                📅 Date: ${d.date} <br>
+                ⏰ Time: ${d.time} <br>
+                👤 Captain: ${d.captain1} vs ${d.captain2} <br>
+                🎯 Overs: ${d.overs}
+            </div>
+
+        </div>
+        `;
+    });
+
+    document.getElementById("list").innerHTML = html;
+
+});
+
+db.collection("matches").onSnapshot(snapshot => {
+
+    let points = {};
+
+    snapshot.forEach(doc => {
+        const d = doc.data();
+
+        if(d.winner){
+
+            // initialize
+            if(!points[d.team1]) points[d.team1] = 0;
+            if(!points[d.team2]) points[d.team2] = 0;
+
+            // winner ko 2 point
+            points[d.winner] += 2;
+        }
+    });
+
+    // sort
+    let sorted = Object.entries(points).sort((a,b)=>b[1]-a[1]);
+
+    let html = "<b>Team | Points</b><br><br>";
+
+    sorted.forEach(([team, pts], i) => {
+        html += `${i+1}. ${team} - ${pts} pts<br>`;
+    });
+
+    document.getElementById("leaderboard").innerHTML = html;
+
+});
+
+// 🔙 Back
+function goBack(){
+    window.close();
+}
+</script>
+
+</body>
+</html>
