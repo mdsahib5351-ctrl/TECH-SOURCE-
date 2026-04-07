@@ -60,14 +60,117 @@ input{
     padding:8px;
     border-bottom:1px solid #333;
 }
+
+/* 🌙 Body */
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(135deg,#020617,#0f172a);
+    color:#fff;
+    padding:20px;
+}
+
+/* 📦 Card Style */
+#searchBox, #resultBox{
+    background:#1e293b;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:20px;
+    box-shadow:0 0 20px rgba(0,0,0,0.5);
+}
+
+/* 🔘 Button */
+button{
+    background:linear-gradient(45deg,#22c55e,#16a34a);
+    border:none;
+    padding:12px;
+    border-radius:8px;
+    color:#fff;
+    font-size:15px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    transform:scale(1.05);
+    opacity:0.9;
+}
+
+/* 📊 Status Badge */
+.status{
+    padding:6px 12px;
+    border-radius:6px;
+    font-size:14px;
+    display:inline-block;
+    margin-top:5px;
+}
+
+/* 🎨 Status Colors */
+.pending{
+    background:#f59e0b;
+}
+
+.payment_submitted{
+    background:#3b82f6;
+}
+
+.approved{
+    background:#22c55e;
+    box-shadow:0 0 10px #22c55e;
+}
+
+.rejected{
+    background:#ef4444;
+}
+
+/* 📱 Mobile Responsive */
+@media(max-width:600px){
+    body{
+        padding:10px;
+    }
+
+    button{
+        font-size:14px;
+    }
+}
+
+.contact-box{
+    background:#0f172a;
+    padding:15px;
+    border-radius:10px;
+    text-align:left;
+    margin-top:10px;
+}
+
+.contact-box p{
+    margin:8px 0;
+    font-size:14px;
+}
+
+.contact-btn{
+    width:100%;
+    margin-top:5px;
+}
+
+/* WhatsApp style */
+.whatsapp{
+    background:#25D366;
+}
+
+.whatsapp:hover{
+    box-shadow:0 0 10px #25D366;
+}
 </style>
 </head>
 
 <body>
 
 <div class="banner">🏏 MPL Tournament 2026</div>
+<div class="btn-primary">
+    <button onclick="openSchedule()">📅 View Match Schedule</button>
+</div>
 
-<div class="container">
+<div class="container" id="body">
 
 <!-- ⏳ Countdown -->
 <h3>⏳ Match Start In: 10 April 2026</h3>
@@ -97,6 +200,46 @@ input{
 <!-- 🏆 Approved Teams -->
 <h3>🏆 Approved Teams</h3>
 <div id="teams" class="box"></div>
+
+<h3>📞 Contact Admin</h3>
+
+<div class="contact-box">
+
+    <p>👤 Organizer: <b>Md Shaklain</b></p>
+
+    <p>📞 Call: 
+        <a href="tel:917372035076">Make a Call</a>
+    </p>
+
+    <p>💬 WhatsApp:</p>
+    <a href="https://wa.me/917372035076" target="_blank">
+        <button class="contact-btn whatsapp">Chat on WhatsApp</button>
+    </a>
+
+    <p>📍 Location: Mahgama</p>
+
+</div>
+
+</div>
+<!-- 🔍 Mobile Input -->
+<div id="searchBox">
+    <input id="mobileInput" placeholder="Enter mobile number" style="padding:10px;width:100%">
+    <button onclick="track()" style="margin-top:10px;padding:10px;width:100%">Track Status</button>
+</div>
+
+<!-- 📊 Status -->
+<div id="resultBox" style="display:none;">
+
+    <h3>📊 Application Status</h3>
+    <div id="statusBox"></div>
+
+    <h3>🏏 My Team Details</h3>
+    <div id="teamBox"></div>
+    <button onclick="goBack()">⬅ Back</button>
+    <h3>📞 Contact Admin</h3>
+    <a href="https://wa.me/917372035076" target="_blank">
+        <button style="padding:10px;width:100%">💬 WhatsApp</button>
+    </a>
 
 </div>
 
@@ -207,6 +350,66 @@ db.collection("settings")
     }
 });
 
+function track(){
+
+    const mobile = document.getElementById("mobileInput").value;
+
+    if(!mobile){
+        alert("Enter mobile number");
+        return;
+    }
+
+    db.collection("tournament")
+    .where("mobile","==", mobile)
+    .get()
+    .then(snapshot => {
+
+        if(snapshot.empty){
+            alert("No Data Found");
+            return;
+        }
+
+        // 🔥 Hide input, show result
+document.getElementById("body").style.display = "none";
+document.getElementById("searchBox").style.display = "none";
+document.getElementById("resultBox").style.display = "block";
+
+        snapshot.forEach(doc => {
+
+            const d = doc.data();
+
+            // 📊 Status
+            document.getElementById("statusBox").innerHTML = `
+                Team: <b>${d.team}</b><br><br>
+                Status: <span class="status ${d.status}">${d.status}</span><br><br>
+                ${
+                    d.status === "approved" ? "✅ Your team is selected!" :
+                    d.status === "rejected" ? "❌ Try next time" :
+                    d.status === "payment_submitted" ? "⏳ Waiting for approval" :
+                    "🕒 Pending..."
+                }
+            `;
+
+            // 🧾 Team Details
+            document.getElementById("teamBox").innerHTML = `
+                👤 Captain: ${d.captain}<br>
+                📞 Mobile: ${d.mobile}<br>
+                📍 Place: ${d.place}
+            `;
+
+        });
+
+    });
+
+}
+function goBack(){
+    document.getElementById("body").style.display = "block";
+    document.getElementById("searchBox").style.display = "block";
+    document.getElementById("resultBox").style.display = "none";
+}
+function openSchedule(){
+    window.open("schedule.html", "_blank");
+}
 </script>
 
 </body>
