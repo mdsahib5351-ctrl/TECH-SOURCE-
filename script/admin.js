@@ -43,6 +43,26 @@ return;
 document.body.style.display = "block";
 
 });
+
+const IMGBB_API_KEY = "fa4ad05090c8cc3f9ade673a64a52235";
+
+async function uploadToImgBB(file){
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await res.json();
+
+    if(!data.success){
+        throw new Error("Upload failed");
+    }
+
+    return data.data.url; // ✅ original quality
+}
 const billTable = document.getElementById('billTable');
 const paidCountEl = document.getElementById('paidCount');
 const unpaidCountEl = document.getElementById('unpaidCount');
@@ -326,7 +346,7 @@ _This is a reminder that the above-mentioned bill has a pending amount(₹${dueA
 _आप भुगतान इस लिंक पर क्लिक करके आसानी से कर सकते हैं_ */* _You can make the payment by clicking here:_
  
  *🢃Pay Now🢃*
-https://mdsahib5351-ctrl.github.io/tech_source/billview.html?id=${docId}
+https://mdsahib5351-ctrl.github.io/TECH-SOURCE-/billview.html?id=${docId}
 
 ~यदि आपने पहले ही भुगतान कर दिया है, तो कृपया इसे अनदेखा करें।~
 ~If you have already made the payment, please ignore this message.~
@@ -361,9 +381,14 @@ function loadPanApplications(){
     ${d.status}
 </td>
                 <td>
-                    <button onclick="window.open('${d.photo}')">Photo</button>
-                    <button onclick="window.open('${d.aadhaarFront}')">Aadhaar</button>
-                </td>
+    <button onclick="window.open('${d.photo}')">Photo</button>
+    <button onclick="window.open('${d.aadhaarFront}')">Aadhaar</button>
+
+    ${d.documentUrl 
+        ? `<button onclick="downloadPan('${d.documentUrl}')">Download PAN</button>` 
+        : `<span style="color:red;">Not Ready</span>`
+    }
+</td>
                 <td>
                     <button onclick="openPanView('${doc.id}')">View</button>
                     <button onclick="editPan('${doc.id}')">Edit</button>
@@ -469,23 +494,40 @@ function openPanStatusEdit(docId, currentStatus, remark){
 function closePanStatusEdit(){
     document.getElementById('panStatusEditModal').style.display = 'none';
 }
-function savePanStatusEdit(){
+async function savePanStatusEdit(){
     if(!currentPanStatusId) return;
 
     const status = document.getElementById('panEditStatus').value;
     const remark = document.getElementById('panEditRemark').value.trim();
+    const file = document.getElementById('panDocument').files[0];
 
-    db.collection('applications').doc(currentPanStatusId).update({
-        status: status,
-        remark: remark
-    })
-    .then(()=>{
+    let documentUrl = "";
+
+    try{
+
+        // 👉 Agar approved hai tabhi upload kare
+        if(status === "approved" && file){
+            documentUrl = await uploadToImgBB(file);
+        }
+
+        let updateData = {
+            status: status,
+            remark: remark
+        };
+
+        // 👉 agar image upload hua hai to save karo
+        if(documentUrl){
+            updateData.documentUrl = documentUrl;
+        }
+
+        await db.collection('applications').doc(currentPanStatusId).update(updateData);
+
         alert("Status Updated ✅");
         closePanStatusEdit();
-    })
-    .catch(err=>{
+
+    }catch(err){
         alert("Error: " + err.message);
-    });
+    }
 }
 function fillRemark(){
     let selected = document.getElementById("panRemarkSelect").value;
@@ -493,4 +535,11 @@ function fillRemark(){
     if(selected){
         document.getElementById("panEditRemark").value = selected;
     }
+}
+
+function downloadPan(url){
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "PAN_Card.jpg";
+    a.click();
 }
