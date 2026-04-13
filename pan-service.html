@@ -23,8 +23,9 @@
 <div class="container">
   <button class="btn" onclick="openForm()">New PAN</button>
   <button class="btn" onclick="trackstatus()">Track Status</button>
+  <button class="btn" onclick="openDownloadPopup()">Download PAN</button>
   <button class="btn" onclick="window.location.href='https://www.pan.utiitsl.com/PAN_ONLINE/ePANCardHome'">UYIISTL Pan Download</button> 
-  <button class="btn" onclick="window.location.href='https://onlineservices.proteantech.in/paam/requestAndDownloadEPAN.html'">NSDL Pan Download</button>
+  <button class="btn" onclick="window.location.href='https://onlineservices.proteantech.in/SiteMaintenance.html'">NSDL Pan Download</button>
 </div>
 
 <div id="formScreen" class="fullscreen-form">
@@ -143,6 +144,40 @@
 </div>
 </div>
 
+<h3>Documents Type</h3>
+<div class="form-grid">
+  <div class="form-groupp">
+    <label>Proof of Identity</label>
+    <select id="proofOfIdentity" required>
+      <option value="A1">Aadhaar Card</option>
+    </select>
+  </div>
+
+  <div class="form-groupp">
+    <label>Proof of Address</label>
+    <select id="proofOfAddress" required>
+      <option value="A2">Aadhaar Card</option>
+    </select>
+  </div>
+
+  <div class="form-groupp">
+    <label>Proof of Birth</label>
+       <select id="proof_dob" name="proof_dob" class="form-control" required>
+    		<option value="">--- Select DOB/DOI Proof---</option>
+    		<option value="Affidavit sworn before Magistrate stating Date of Birth (In Copy)">Affidavit sworn before Magistrate stating Date of Birth (In Copy)</option>
+    		<option value="Birth Certificate issued by Municipal Authority or  any office  authorized  to issue Birth &amp; Death Certificate by  Registrar of Birth and Deaths or the Indian Consulate (In Copy)" selected="selected">Birth Certificate issued by Municipal Authority or  any office  authorized  to issue Birth &amp; Death Certificate by  Registrar of Birth and Deaths or the Indian Consulate (In Copy)</option>
+    		<option value="Central Govt Health Scheme  Card or Ex serviceman Contributory Health Scheme photo card (In Copy)">Central Govt Health Scheme  Card or Ex serviceman Contributory Health Scheme photo card (In Copy)</option>
+    		<option value="Death Certificate issued by Municipal Authority or any office authorized to issue Birth &amp; Death Certificate by Registrar of Birth and Deaths or the Indian Consulate (In Copy)">Death Certificate issued by Municipal Authority or any office authorized to issue Birth &amp; Death Certificate by Registrar of Birth and Deaths or the Indian Consulate (In Copy)</option>
+    		<option value="Driving Licence (In Copy)">Driving Licence (In Copy)</option>
+    		<option value="Marriage Certificate issued by Registrar of Marriages (In Copy)">Marriage Certificate issued by Registrar of Marriages (In Copy)</option>
+    		<option value="Matriculation certificate or mark sheet of recognised board (In Copy)">Matriculation certificate or mark sheet of recognised board (In Copy)</option>
+    		<option value="Passport (In Copy)">Passport (In Copy)</option>
+    		<option value="Pension payment order (In Copy)">Pension payment order (In Copy)</option>
+    		<option value="Photo ID card issued by Central Govt or State Govt or a Public Sector undertaking or State Public sector undertaking (In Copy) ">Photo ID card issued by Central Govt or State Govt or a Public Sector undertaking or State Public sector undertaking (In Copy) </option>
+    		<option value="Voters ID card (In Copy)">Voters ID card (In Copy)</option>
+    	</select>
+</div>
+</div>
 <h3>Upload Documents</h3>
 
 <div class="form-grid">
@@ -167,8 +202,13 @@
     <input type="file" id="aadhaarBack" required>
   </div>
 
+  <div class="form-group">
+    <label>Dob Proof Certificate</label>
+    <input type="file" id="dobProof" required>
+  </div>
+
   <!-- 👇 Guardian Upload (Hidden initially) -->
-  <div class="form-group" id="gFrontBox" style="display:none;">
+  <div id="gFrontBox" style="display:none;" class="form-group">
     <label>Guardian Aadhaar Front</label>
     <input type="file" id="guardianAadhaarFront">
   </div>
@@ -189,6 +229,23 @@
       <P>Note: Pan Card Apply Fee: Rs. 190</p>
 
 </form>
+</div> <!-- formScreen close -->
+
+<!-- ✅ Popup yahan hona chahiye -->
+<div id="downloadPopup" class="popup">
+
+  <div class="popup-box">
+    <h3>Download PAN</h3>
+
+    <input type="text" id="ackNo" placeholder="Enter Ack No">
+
+    <div style="margin-top:15px;">
+      <button onclick="getPan()">Submit</button>
+      <button onclick="closeDownloadPopup()">Cancel</button>
+    </div>
+
+    <p id="downloadMsg" style="margin-top:10px; color:red;"></p>
+  </div>
 
 </div>
 </body>
