@@ -48,6 +48,7 @@ if(id){
 <img src="${d.signature}">
 <img src="${d.aadhaarFront}">
 <img src="${d.aadhaarBack}">
+<img src="${d.dobProof}">
 ${d.isMinor ? `
   <h3>Guardian Documents</h3>
   <img src="${d.guardianFront}">
