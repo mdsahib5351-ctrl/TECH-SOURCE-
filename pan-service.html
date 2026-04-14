@@ -20,12 +20,38 @@
   <h2>PAN Card Service</h2>
 </header>
 
-<div class="container">
-  <button class="btn" onclick="openForm()">New PAN</button>
-  <button class="btn" onclick="trackstatus()">Track Status</button>
-  <button class="btn" onclick="openDownloadPopup()">Download PAN</button>
-  <button class="btn" onclick="window.location.href='https://www.pan.utiitsl.com/PAN_ONLINE/ePANCardHome'">UYIISTL Pan Download</button> 
-  <button class="btn" onclick="window.location.href='https://onlineservices.proteantech.in/SiteMaintenance.html'">NSDL Pan Download</button>
+<div class="card-container">
+
+  <div class="action-card" onclick="openForm()">
+    <i class="fa fa-plus-circle"></i>
+    <h3>New PAN</h3>
+    <p>Apply for new PAN card</p>
+  </div>
+
+  <div class="action-card" onclick="trackstatus()">
+    <i class="fa fa-search"></i>
+    <h3>Track Status</h3>
+    <p>Check your application status</p>
+  </div>
+
+  <div class="action-card" onclick="openDownloadPopup()">
+    <i class="fa fa-download"></i>
+    <h3>Download PAN</h3>
+    <p>Download your PAN card</p>
+  </div>
+
+  <div class="action-card" onclick="window.location.href='https://www.pan.utiitsl.com/PAN_ONLINE/ePANCardHome'">
+    <i class="fa fa-id-card"></i>
+    <h3>UTIITSL Download</h3>
+    <p>Official PAN download portal</p>
+  </div>
+
+  <div class="action-card" onclick="window.location.href='https://onlineservices.proteantech.in/SiteMaintenance.html'">
+    <i class="fa fa-building"></i>
+    <h3>NSDL Download</h3>
+    <p>Protean / NSDL portal</p>
+  </div>
+
 </div>
 
 <div id="formScreen" class="fullscreen-form">
