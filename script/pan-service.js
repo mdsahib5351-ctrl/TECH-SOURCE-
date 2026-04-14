@@ -23,6 +23,8 @@ function closeForm(){
 
 /* IMGBB UPLOAD */
 async function uploadToImgBB(file){
+  if(!file) throw "File missing";
+
   let apiKey = "fa4ad05090c8cc3f9ade673a64a52235";
 
   let fd = new FormData();
