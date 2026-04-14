@@ -11,7 +11,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
   <!-- js -->
     <script src="script/billview.js" defer></script>
 </head>
@@ -55,48 +56,13 @@
 
 </div>
 </div>
-<button class="btn" onclick="openPayOptions()">Pay Now</button>
+<button class="btn" onclick="payNow()">Pay Now</button>
 </div>
 </div>
 <button class="btn" onclick="downloadPDF()">Download PDF</button>
 <button class="btn" onclick="printBill()">Print Bill</button>
 
-<!-- QR POPUP -->
-<div id="payOptions" class="qr-popup">
-  <div class="qr-box">
-    
-    <span class="close-btn" onclick="closePayOptions()">×</span>
-
-    <h2>Select Payment Option</h2>
-
-    <button class="btn" onclick="payUPI()">📱 Pay with UPI App</button><br><br>
-
-    <button class="btn" onclick="openQRPopup()">📷 Scan QR</button><br><br>
-
-    <button class="btn" onclick="copyUPI()">📋 Copy UPI ID</button><br><br>
-
-    <button class="btn" onclick="payWhatsApp()">💬 Pay via WhatsApp</button><br><br>
-
-    <input type="text" id="userUpi" placeholder="Enter UPI ID" 
-    style="padding:8px; width:90%; border-radius:8px; border:1px solid #ccc;"><br><br>
-
-<button class="btn" onclick="requestToUser()">📩 Send Request</button>
-
   </div>
 </div>
-
-<div id="qrPopup" class="qr-popup">
-  <div class="qr-box">
-    
-    <span class="close-btn" onclick="closeQR()">×</span>
-
-    <h2>Scan & Pay</h2>
-
-    <div id="bigQR"></div>
-
-    <p id="qrAmountText"></p>
-
-  </div>
-</div>
-  </div>
-</div>
+</body>
+</html>
