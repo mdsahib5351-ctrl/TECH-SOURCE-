@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Payment Page</title>
+</head>
+<body>
+
+<h2>Payment for PAN Application</h2>
+
+<p id="ackText"></p>
+
+<button onclick="payNow()">Pay ₹190</button>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const ack = urlParams.get("ack");
+
+document.getElementById("ackText").innerText = "Ack No: " + ack;
+
+function payNow(){
+  alert("Payment processing start...");
+  // yaha Cashfree/Razorpay add kar dena
+}
+</script>
+
+</body>
+</html>
