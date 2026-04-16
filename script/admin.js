@@ -483,14 +483,22 @@ function savePanEdit(){
 let currentPanStatusId = null;
 
 function openPanStatusEdit(docId, currentStatus, remark){
+
     currentPanStatusId = docId;
 
-    document.getElementById('panEditStatus').value = currentStatus || 'pending';
-    document.getElementById('panEditRemark').value = remark || '';
+    db.collection('applications').doc(docId).get().then(doc=>{
 
-    document.getElementById('panStatusEditModal').style.display = 'flex';
+        const d = doc.data();
+
+        document.getElementById('panEditStatus').value = d.status || 'pending';
+        document.getElementById('panEditRemark').value = d.remark || '';
+
+        // ✅ NEW: payment status set
+        document.getElementById('panPaymentStatus').value = d.paymentStatus || 'unpaid';
+
+        document.getElementById('panStatusEditModal').style.display = 'flex';
+    });
 }
-
 function closePanStatusEdit(){
     document.getElementById('panStatusEditModal').style.display = 'none';
 }
@@ -499,31 +507,34 @@ async function savePanStatusEdit(){
 
     const status = document.getElementById('panEditStatus').value;
     const remark = document.getElementById('panEditRemark').value.trim();
+    let paymentStatusRaw = document.getElementById('panPaymentStatus').value;
+    const paymentStatus = paymentStatusRaw.toLowerCase();
     const file = document.getElementById('panDocument').files[0];
 
     let documentUrl = "";
 
     try{
 
-        // 👉 Agar approved hai tabhi upload kare
         if(status === "approved" && file){
             documentUrl = await uploadToImgBB(file);
         }
 
         let updateData = {
-            status: status,
-            remark: remark
+            status,
+            remark,
+            paymentStatus: paymentStatus
         };
 
-        // 👉 agar image upload hua hai to save karo
         if(documentUrl){
             updateData.documentUrl = documentUrl;
         }
 
         await db.collection('applications').doc(currentPanStatusId).update(updateData);
 
-        alert("Status Updated ✅");
+        alert("PAN Updated Successfully ✅");
         closePanStatusEdit();
+
+        loadPanApplications(); // refresh
 
     }catch(err){
         alert("Error: " + err.message);
