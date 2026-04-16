@@ -187,6 +187,8 @@ function trackstatus(){
 
   if(!ack) return;
 
+  ack = ack.trim().toUpperCase();
+
   db.collection("applications")
     .where("ackNo","==",ack)
     .get()
@@ -200,25 +202,57 @@ function trackstatus(){
       snapshot.forEach(doc=>{
         let data = doc.data();
 
-        let status =
-  data.status === "approved" ? "🟢 Approved" :
-  data.status === "under proccess" ? "🟠 Under process" :
-  data.status === "rejected" ? "🔴 Rejected" :
-  "🟡 Pending";
+        const payBtn = document.getElementById("payBtn");
+        let html = "";
 
-let remark = (data.remark && data.remark.trim() !== "") 
-    ? data.remark 
-    : "No remark";
+        // ❌ PAYMENT UNPAID CASE
+        if(data.paymentStatus !== "paid"){
 
-alert(
-`ACK: ${data.ackNo}
+          html = `
+            <b>ACK:</b> ${data.ackNo}<br>
+            <b>Name:</b> ${data.name}<br><br>
 
-Name: ${data.name}
+            <span style="color:red; font-weight:bold; cursor:pointer;"
+              onclick="window.location.href='payment.html?ack=${data.ackNo}'">
+              ⚠️ Payment Pending - Click here to complete payment
+            </span>
+          `;
 
-Status: ${status}
+          // 👉 show pay button
+          payBtn.style.display = "block";
+          payBtn.onclick = function(){
+            window.location.href = "payment.html?ack=" + data.ackNo;
+          };
 
-Remark: ${remark}`
-);
+        }
+
+        // ✅ PAYMENT PAID CASE
+        else {
+
+          let status =
+            data.status === "approved" ? "🟢 Approved" :
+            data.status === "under process" ? "🟠 Under process" :
+            data.status === "rejected" ? "🔴 Rejected" :
+            "🟡 Pending";
+
+          let remark = (data.remark && data.remark.trim() !== "")
+            ? data.remark
+            : "No remark";
+
+          html = `
+            <b>ACK:</b> ${data.ackNo}<br>
+            <b>Name:</b> ${data.name}<br>
+            <b>Status:</b> ${status}<br>
+            <b>Remark:</b> ${remark}
+          `;
+
+          // 👉 hide pay button
+          payBtn.style.display = "none";
+        }
+
+        // 👉 show in popup
+        document.getElementById("trackDetails").innerHTML = html;
+        document.getElementById("trackPopup").style.display = "flex";
       });
 
     })
@@ -226,6 +260,10 @@ Remark: ${remark}`
       alert("Error: "+err.message);
     });
 }
+function closeTrackPopup(){
+  document.getElementById("trackPopup").style.display = "none";
+}
+
 function checkAge(){
   let dob = document.getElementById("dob").value;
   if(!dob) return;
@@ -410,4 +448,64 @@ async function payNow() {
     paymentSessionId: data.payment_session_id,
     redirectTarget: "_self"
   });
+}
+
+function openPaymentCheck(){
+  document.getElementById("paymentPopup").style.display = "flex";
+}
+
+function closePaymentPopup(){
+  document.getElementById("paymentPopup").style.display = "none";
+  document.getElementById("paymentAck").value = "";
+  document.getElementById("paymentResult").innerText = "";
+  document.getElementById("payNowBtn").style.display = "none";
+}
+
+async function checkPaymentStatus(){
+  const ack = document.getElementById("paymentAck").value.trim().toUpperCase();
+  const result = document.getElementById("paymentResult");
+  const payBtn = document.getElementById("payNowBtn");
+
+  if(!ack){
+    result.innerText = "⚠️ Enter Ack No";
+    result.style.color = "red";
+    return;
+  }
+
+  result.innerText = "⏳ Checking...";
+  payBtn.style.display = "none";
+
+  try{
+    const snapshot = await db.collection("applications")
+      .where("ackNo","==",ack)
+      .get();
+
+    if(snapshot.empty){
+      result.innerText = "❌ Record not found";
+      result.style.color = "red";
+      return;
+    }
+
+    const data = snapshot.docs[0].data();
+
+    if(data.paymentStatus === "paid"){
+      result.innerText = "✅ Payment Completed";
+      result.style.color = "green";
+    } else {
+      result.innerText = "❌ Payment Pending";
+      result.style.color = "orange";
+
+      // show pay button
+      payBtn.style.display = "block";
+      payBtn.setAttribute("data-ack", ack);
+    }
+
+  }catch(err){
+    result.innerText = "Error: " + err.message;
+  }
+}
+
+function goToPayment(){
+  const ack = document.getElementById("payNowBtn").getAttribute("data-ack");
+  window.location.href = "payment.html?ack=" + ack;
 }
