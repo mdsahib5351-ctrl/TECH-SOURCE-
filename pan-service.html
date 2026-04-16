@@ -40,17 +40,23 @@
     <p>Download your PAN card</p>
   </div>
 
-  <div class="action-card" onclick="window.location.href='https://www.pan.utiitsl.com/PAN_ONLINE/ePANCardHome'">
+  <div class="action-card" onclick="window.open('https://www.pan.utiitsl.com/PAN_ONLINE/ePANCardHome', '_blank')">
     <i class="fa fa-id-card"></i>
     <h3>UTIITSL Download</h3>
     <p>Official PAN download portal</p>
   </div>
 
-  <div class="action-card" onclick="window.location.href='https://onlineservices.proteantech.in/SiteMaintenance.html'">
-    <i class="fa fa-building"></i>
-    <h3>NSDL Download</h3>
-    <p>Protean / NSDL portal</p>
-  </div>
+  <div class="action-card" onclick="window.open('https://onlineservices.proteantech.in/SiteMaintenance.html', '_blank')">
+  <i class="fa fa-building"></i>
+  <h3>NSDL Download</h3>
+  <p>Protean / NSDL portal</p>
+</div>
+
+<div class="action-card" onclick="openPaymentCheck()">
+  <i class="fa fa-credit-card"></i>
+  <h3>Payment Status</h3>
+  <p>Check & Pay Pending</p>
+</div>
 
 </div>
 
@@ -289,6 +295,36 @@ flex-direction:column;
 ">
   <div class="spinner"></div>
   <p>Uploading Documents... Please wait</p>
+</div>
+<div id="paymentPopup" class="popup">
+  <div class="popup-box">
+    <h3>Check Payment Status</h3>
+
+    <input type="text" id="paymentAck" placeholder="Enter Ack No">
+
+    <button class="btn" onclick="checkPaymentStatus()">Check</button>
+    <button class="btn" onclick="closePaymentPopup()">Cancel</button>
+
+    <p id="paymentResult" style="margin-top:10px;"></p>
+
+    <button id="payNowBtn" class="btn pay" style="display:none;" onclick="goToPayment()">
+      Pay Now
+    </button>
+  </div>
+</div>
+
+<div id="trackPopup" class="popup">
+  <div class="popup-box">
+    <h3>Application Status</h3>
+
+    <p id="trackDetails"></p>
+
+    <button id="payBtn" class="btn pay" style="display:none;">
+      💳 Pay Now
+    </button>
+
+    <button class="btn" onclick="closeTrackPopup()">Close</button>
+  </div>
 </div>
 </body>
 </html>
