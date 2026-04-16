@@ -122,7 +122,7 @@
         <option value="pending">Pending</option>
         <option value="approved">Approved</option>
         <option value="rejected">Rejected</option>
-        <option value="under proccess">Under proccess</option>
+        <option value="under process">Under process</option>
     </select>
 
     <select id="panRemarkSelect" onchange="fillRemark()">
@@ -132,8 +132,16 @@
         <option value="APPLICATION IS UNDER OBJECTION CLEARANCE. PLEASE UPLOAD THE REVISED DOCUMENTS (SCANNED IMAGES).">APPLICATION IS UNDER OBJECTION CLEARANCE. PLEASE UPLOAD THE REVISED DOCUMENTS (SCANNED IMAGES).</option>
         <option value="APPLICATION IS UNDER OBJECTION CLEARANCE AND IS NOT YET ATTACHED TO ANY BATCH. PLEASE GENERATE BATCH FOR PHYSICAL TRANSIT OF APPLICATIONS.">APPLICATION IS UNDER OBJECTION CLEARANCE AND IS NOT YET ATTACHED TO ANY BATCH. PLEASE GENERATE BATCH FOR PHYSICAL TRANSIT OF APPLICATIONS.</option>
         <option value="Application is verified and is being moved for processing.">Application is verified and is being moved for processing.</option>
+        <option value="Application is rejected due to invalid documents.">Application is rejected due to invalid documents.</option>
+        <option value="YOUR APPLICATION IS UNDER PROCESSING - PAN UNDER ALLOTMENT, AWAITING CONFIRMATION FROM INCOME TAX DEPARTMENT.">YOUR APPLICATION IS UNDER PROCESSING - PAN UNDER ALLOTMENT, AWAITING CONFIRMATION FROM INCOME TAX DEPARTMENT.</option>
         <option value="Approved successfully">Approved successfully</option>
 </select>
+
+    <select id="panPaymentStatus">
+        <option value="pending">Pending</option>
+        <option value="unpaid">Unpaid</option>
+        <option value="paid">Paid</option>
+    </select>
 
     <input type="text" id="panEditRemark" placeholder="Enter Remark (optional)">
     <input type="file" id="panDocument" accept="image/*">
