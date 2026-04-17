@@ -44,13 +44,12 @@ if (!id) {
       let middle = d.middleName || "";
       let last = d.lastName || "";
 
-      let fullName = (last + " " + (middle ? middle + " " : "") + first).trim();
+      let fullName = (first + " " + (middle ? middle + " " : "") + last).trim();
 
       document.getElementById("firstName").innerText = first || "-";
       document.getElementById("middleName").innerText = middle || "-";
       document.getElementById("lastName").innerText = last || "-";
       document.getElementById("fullName").innerText = fullName || "-";
-
       // =========================
       // 👨 FATHER SPLIT
       // =========================
@@ -58,11 +57,11 @@ if (!id) {
       let fLast = fParts[0] || "";
       let fFirst = fParts[fParts.length - 1] || "";
       let fMiddle = fParts.slice(1, -1).join(" ");
-
-      document.getElementById("fLast").innerText = fLast || "-";
-      document.getElementById("fMiddle").innerText = fMiddle || "-";
+      let fullFather = (fFirst + " " + (fMiddle ? fMiddle + " " : "") + fLast).trim();
       document.getElementById("fFirst").innerText = fFirst || "-";
-      document.getElementById("fFull").innerText = d.father || "-";
+      document.getElementById("fMiddle").innerText = fMiddle || "-";
+      document.getElementById("fLast").innerText = fLast || "-";
+      document.getElementById("fFull").innerText = fullFather || "-";
 
       // =========================
       // 👩 MOTHER SPLIT
@@ -71,11 +70,12 @@ if (!id) {
       let mLast = mParts[0] || "";
       let mFirst = mParts[mParts.length - 1] || "";
       let mMiddle = mParts.slice(1, -1).join(" ");
+      let mFull = (mFirst + " " + (mMiddle ? mMiddle + " " : "") + mLast).trim();
 
       document.getElementById("mLast").innerText = mLast || "-";
       document.getElementById("mMiddle").innerText = mMiddle || "-";
       document.getElementById("mFirst").innerText = mFirst || "-";
-      document.getElementById("mFull").innerText = d.mother || "-";
+      document.getElementById("mFull").innerText = mFull || "-";
 
       // =========================
       // 👶 GUARDIAN
@@ -88,11 +88,12 @@ if (!id) {
         let gLast = gParts[0] || "";
         let gFirst = gParts[gParts.length - 1] || "";
         let gMiddle = gParts.slice(1, -1).join(" ");
+        let gFull = (gFirst + " " + (gMiddle ? gMiddle + " " : "") + gLast).trim();
 
         document.getElementById("gLast").innerText = gLast || "-";
         document.getElementById("gMiddle").innerText = gMiddle || "-";
         document.getElementById("gFirst").innerText = gFirst || "-";
-        document.getElementById("gFull").innerText = d.guardianName || "-";
+        document.getElementById("gFull").innerText = gFull || "-";
 
       } else {
         document.getElementById("guardianSection").style.display = "none";
