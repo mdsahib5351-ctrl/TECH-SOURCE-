@@ -53,38 +53,49 @@ const submitBtn = document.querySelector("#newpanForm button[type='submit']");
 
 try {
 
-    // 🔥 START LOADING
     loading.style.display = "flex";
-    loading.querySelector("p").innerText = "Uploading documents...";
     submitBtn.disabled = true;
     submitBtn.innerText = "Processing...";
 
-    // 🔢 AGE CALCULATION
+    // 👤 NAME BUILD
+    let firstName = document.getElementById("firstName").value;
+    let middleName = document.getElementById("middleName").value;
+    let lastName = document.getElementById("lastName").value;
+
+    let fullName =
+      lastName + " " +
+      (middleName ? middleName + " " : "") +
+      firstName;
+
+    // 👨‍👩‍👦 FATHER
+    let fatherName =
+    document.getElementById("fatherlastName").value + " " +
+      (document.getElementById("fatherMiddleName").value
+      ? document.getElementById("fatherMiddleName").value + " "
+      : "") +
+    document.getElementById("fatherFirstName").value;
+
+    let motherName =
+      document.getElementById("motherlastName").value + " " +
+      (document.getElementById("motherMiddleName").value
+      ? document.getElementById("motherMiddleName").value + " "
+      : "") +
+    document.getElementById("motherfirstName").value;
+
+    // 🎂 AGE
     let dobValue = document.getElementById("dob").value;
     let birthDate = new Date(dobValue);
     let today = new Date();
 
     let age = today.getFullYear() - birthDate.getFullYear();
     let m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
 
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-    }
-
-    // 📤 UPLOAD STEP BY STEP
-    loading.querySelector("p").innerText = "Uploading Photo...";
+    // 📤 UPLOAD
     let photo = await uploadToImgBB(document.getElementById("photo").files[0]);
-
-    loading.querySelector("p").innerText = "Uploading Signature...";
     let signature = await uploadToImgBB(document.getElementById("signature").files[0]);
-
-    loading.querySelector("p").innerText = "Uploading Aadhaar Front...";
     let aadhaarFront = await uploadToImgBB(document.getElementById("aadhaarFront").files[0]);
-
-    loading.querySelector("p").innerText = "Uploading Aadhaar Back...";
     let aadhaarBack = await uploadToImgBB(document.getElementById("aadhaarBack").files[0]);
-
-    loading.querySelector("p").innerText = "Uploading DOB Proof...";
     let dobProof = await uploadToImgBB(document.getElementById("dobProof").files[0]);
 
     // 👶 GUARDIAN
@@ -94,29 +105,40 @@ try {
 
     if(age < 18){
 
-        let gName = document.getElementById("guardianName").value;
+        let gFirst = document.getElementById("guardianfirstName").value;
+        let gMiddle = document.getElementById("guardianMiddleName").value;
+        let gLast = document.getElementById("guardianlastName").value;
+
+        let gName =
+          gLast + " " +
+          (gMiddle ? gMiddle + " " : "") +
+          gFirst;
+
         let gFrontFile = document.getElementById("guardianAadhaarFront").files[0];
         let gBackFile = document.getElementById("guardianAadhaarBack").files[0];
 
         if(!gName || !gFrontFile || !gBackFile){
-            throw "Guardian details required for minor applicant";
+            throw "Guardian details required for minor";
         }
-
-        loading.querySelector("p").innerText = "Uploading Guardian Docs...";
 
         guardianName = gName;
         guardianFront = await uploadToImgBB(gFrontFile);
         guardianBack = await uploadToImgBB(gBackFile);
     }
 
-    loading.querySelector("p").innerText = "Saving Application...";
-
     let ackNo = generateAck();
 
     formData = {
         ackNo,
-        title: document.getElementById("title").value,
-        name: document.getElementById("name").value,
+
+        firstName,
+        middleName,
+        lastName,
+        name: fullName,
+
+        father: fatherName,
+        mother: motherName,
+
         aadhaar: document.getElementById("aadhar").value,
         nameAadhar: document.getElementById("nameAadhar").value,
         dob: dobValue,
@@ -126,7 +148,6 @@ try {
         gender: document.getElementById("gender").value,
         phone: document.getElementById("phone").value,
         email: document.getElementById("email").value,
-        father: document.getElementById("fatherName").value,
 
         flatNo: document.getElementById("flatNo").value,
         villageCity: document.getElementById("villageCity").value,
@@ -150,21 +171,14 @@ try {
         createdAt: new Date()
     };
 
-        await db.collection("applications").add(formData);
+    await db.collection("applications").add(formData);
 
-        // optional: save ack locally also
-        localStorage.setItem("ackNo", ackNo);
+    localStorage.setItem("ackNo", ackNo);
+    window.location.href = "payment.html?ack=" + ackNo;
 
-        // redirect to payment page
-        window.location.href = "payment.html?ack=" + ackNo;
-
-        } catch(err) {
-
+} catch(err) {
     alert("Error: " + err);
-
 } finally {
-
-    // 🔥 ALWAYS STOP LOADING
     loading.style.display = "none";
     submitBtn.disabled = false;
     submitBtn.innerText = "Submit";
@@ -181,7 +195,6 @@ function generateAck(){
 
   return "PAN" + y + m + d + random;
 }
-
 function trackstatus(){
   let ack = prompt("अपना Ack No डालें:");
 
@@ -293,7 +306,9 @@ function checkAge(){
     document.getElementById("gBackBox").style.display = "none";
 
     // clear
-    document.getElementById("guardianName").value = "";
+    document.getElementById("guardianfirstName").value = "";
+    document.getElementById("guardianMiddleName").value = "";
+    document.getElementById("guardianlastName").value = "";
     document.getElementById("guardianAadhaarFront").value = "";
     document.getElementById("guardianAadhaarBack").value = "";
   }
@@ -509,3 +524,19 @@ function goToPayment(){
   const ack = document.getElementById("payNowBtn").getAttribute("data-ack");
   window.location.href = "payment.html?ack=" + ack;
 }
+
+function updateAadhaarName(){
+  let first = document.getElementById("firstName").value.trim();
+  let middle = document.getElementById("middleName").value.trim();
+  let last = document.getElementById("lastName").value.trim();
+
+  let fullName = [first, middle, last]
+    .filter(Boolean)
+    .join(" ")
+    .toUpperCase();
+
+  document.getElementById("nameAadhar").value = fullName;
+}
+document.getElementById("firstName").addEventListener("input", updateAadhaarName);
+document.getElementById("middleName").addEventListener("input", updateAadhaarName);
+document.getElementById("lastName").addEventListener("input", updateAadhaarName);
