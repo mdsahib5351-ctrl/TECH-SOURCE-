@@ -1,26 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <link rel="icon" href="https://i.ibb.co/TBzgsbMS/TS-logo-with-vibrant-gradients.jpg" type="image/jpeg">
-        <title>TECH SOURCE - Pan View</title>
-        <link rel="stylesheet" href="css/panview.css">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="https://i.ibb.co/TBzgsbMS/TS-logo-with-vibrant-gradients.jpg" type="image/jpeg">
+<title>TECH SOURCE - PAN VIEW</title>
 
-        <!-- Firebase -->
-        <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<link rel="stylesheet" href="css/panview.css">
 
-        <!-- JS -->
-        <script src="script/panview.js" defer></script>
-    </head>
-    <body>
-        <div class="card">
-<h2>PAN Application Details</h2>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<div id="data"></div>
+<!-- JS -->
+<script src="script/panview.js" defer></script>
+</head>
 
+<body>
+
+<div class="card">
+  <h2>PAN Application Details</h2>
+
+  <div id="data">
+
+    <!-- ========================= -->
+    <!-- 👤 APPLICANT NAME -->
+    <!-- ========================= -->
+    <div class="section">
+      <h3>Applicant Name</h3>
+
+      <div class="name-grid">
+        <div class="name-box">
+          <span>Last Name</span>
+          <p onclick="copyText(this)" id="lastName"></p>
+        </div>
+
+        <div class="name-box">
+          <span>Middle Name</span>
+          <p onclick="copyText(this)" id="middleName"></p>
+        </div>
+
+        <div class="name-box">
+          <span>First Name</span>
+          <p onclick="copyText(this)" id="firstName"></p>
+        </div>
+      </div>
+
+      <div class="full-name" onclick="copyText(this)" id="fullName"></div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- 👨 FATHER -->
+    <!-- ========================= -->
+    <div class="section">
+      <h3>Father Details</h3>
+
+      <div class="name-grid">
+        <div class="name-box">
+          <span>Last</span>
+          <p onclick="copyText(this)" id="fLast"></p>
+        </div>
+
+        <div class="name-box">
+          <span>Middle</span>
+          <p onclick="copyText(this)" id="fMiddle"></p>
+        </div>
+
+        <div class="name-box">
+          <span>First</span>
+          <p onclick="copyText(this)" id="fFirst"></p>
+        </div>
+      </div>
+
+      <div class="full-name" onclick="copyText(this)" id="fFull"></div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- 👩 MOTHER -->
+    <!-- ========================= -->
+    <div class="section">
+      <h3>Mother Details</h3>
+
+      <div class="name-grid">
+        <div class="name-box">
+          <span>Last</span>
+          <p onclick="copyText(this)" id="mLast"></p>
+        </div>
+
+        <div class="name-box">
+          <span>Middle</span>
+          <p onclick="copyText(this)" id="mMiddle"></p>
+        </div>
+
+        <div class="name-box">
+          <span>First</span>
+          <p onclick="copyText(this)" id="mFirst"></p>
+        </div>
+      </div>
+
+      <div class="full-name" onclick="copyText(this)" id="mFull"></div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- 👶 GUARDIAN -->
+    <!-- ========================= -->
+    <div class="section" id="guardianSection" style="display:none;">
+      <h3>Guardian Details</h3>
+
+      <div class="name-grid">
+        <div class="name-box">
+          <span>Last</span>
+          <p onclick="copyText(this)" id="gLast"></p>
+        </div>
+
+        <div class="name-box">
+          <span>Middle</span>
+          <p onclick="copyText(this)" id="gMiddle"></p>
+        </div>
+
+        <div class="name-box">
+          <span>First</span>
+          <p onclick="copyText(this)" id="gFirst"></p>
+        </div>
+      </div>
+
+      <div class="full-name" onclick="copyText(this)" id="gFull"></div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- 📋 OTHER DETAILS -->
+    <!-- ========================= -->
+    <div class="section">
+
+      <div class="row"><span>Ack No</span><p onclick="copyText(this)" id="ack"></p></div>
+      <div class="row"><span>Name (Aadhaar)</span><p onclick="copyText(this)" id="aadhaarName"></p></div>
+      <div class="row"><span>Gender</span><p onclick="copyText(this)" id="gender"></p></div>
+      <div class="row"><span>DOB</span><p onclick="copyText(this)" id="dob"></p></div>
+      <div class="row"><span>Phone</span><p onclick="copyText(this)" id="phone"></p></div>
+      <div class="row"><span>Email</span><p onclick="copyText(this)" id="email"></p></div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- 📍 ADDRESS -->
+    <!-- ========================= -->
+    <div class="section">
+      <h3>Address</h3>
+
+      <div class="row"><span>Flat</span><p onclick="copyText(this)" id="flat"></p></div>
+      <div class="row"><span>Village</span><p onclick="copyText(this)" id="village"></p></div>
+      <div class="row"><span>Post Office</span><p onclick="copyText(this)" id="post"></p></div>
+      <div class="row"><span>Sub Division</span><p onclick="copyText(this)" id="sub"></p></div>
+      <div class="row"><span>District</span><p onclick="copyText(this)" id="district"></p></div>
+      <div class="row"><span>State</span><p onclick="copyText(this)" id="state"></p></div>
+      <div class="row"><span>PIN</span><p onclick="copyText(this)" id="pin"></p></div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- 📊 STATUS -->
+    <!-- ========================= -->
+    <div class="section">
+
+      <div class="row">
+        <span>Application Status</span>
+        <p id="status"></p>
+      </div>
+
+      <div class="row">
+        <span>Payment Status</span>
+        <p id="payment"></p>
+      </div>
+
+    </div>
+
+    <!-- ========================= -->
+    <!-- 📂 DOCUMENTS -->
+    <!-- ========================= -->
+    <div class="section">
+      <h3>Documents</h3>
+      <div id="docs"></div>
+    </div>
+
+  </div>
 </div>
+
+<!-- Toast -->
 <div id="toast"></div>
-    </body>
+
+</body>
 </html>
