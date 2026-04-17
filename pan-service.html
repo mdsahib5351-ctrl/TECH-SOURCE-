@@ -69,17 +69,18 @@
 <div class="form-grid">
 
   <div class="form-group">
-    <label>Title</label>
-    <select id="title">
-      <option>Shri</option>
-      <option>Kumari</option>
-      <option>Smt</option>
-    </select>
+    <label>Last Name*</label>
+    <input type="text" id="lastName" required>
   </div>
 
   <div class="form-group">
-    <label>Full Name</label>
-    <input type="text" id="name" required>
+    <label>Middle Name</label>
+    <input type="text" id="middleName">
+  </div>
+
+  <div class="form-group">
+    <label>First Name</label>
+    <input type="text" id="firstName">
   </div>
 
   <div class="form-group">
@@ -89,7 +90,7 @@
 
   <div class="form-group">
     <label>Name as per Aadhaar</label>
-    <input type="text" id="nameAadhar" required>
+    <input type="text" id="nameAadhar" required readonly>
   </div>
 
   <div class="form-group">
@@ -123,8 +124,28 @@
   <h3>Parents Details</h3>
   <div class="form-grid">
     <div class="form-group">
-      <label>Father's Name</label>
-      <input type="text" id="fatherName" required>
+      <label>Father's Last Name*</label>
+      <input type="text" id="fatherlastName" required>
+    </div>
+    <div class="form-group">  
+      <label>Father's Middle Name</label>
+      <input type="text" id="fatherMiddleName">
+    </div>
+    <div class="form-group">
+      <label>Father's First Name</label>
+      <input type="text" id="fatherFirstName">
+    </div>
+    <div class="form-group">
+      <label>Mother's Last Name*</label>
+      <input type="text" id="motherlastName" required>
+    </div>
+    <div class="form-group">  
+      <label>Mother's Middle Name</label>
+      <input type="text" id="motherMiddleName">
+    </div>
+    <div class="form-group">
+      <label>Mother's First Name</label>
+      <input type="text" id="motherfirstName">
     </div>
   </div>
 
@@ -132,8 +153,16 @@
 
 <div class="form-grid" id="guardianFields" style="display:none;">
   <div class="form-group">
-    <label>Guardian Full Name</label>
-    <input type="text" id="guardianName">
+    <label>Guardian Last Name*</label>
+    <input type="text" id="guardianlastName" required>
+  </div>
+  <div class="form-group">  
+    <label>Guardian Middle Name</label>
+    <input type="text" id="guardianMiddleName">
+  </div>
+  <div class="form-group">
+    <label>Guardian First Name</label>
+    <input type="text" id="guardianfirstName">
   </div>
 </div>
 
