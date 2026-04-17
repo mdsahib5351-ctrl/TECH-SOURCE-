@@ -134,7 +134,7 @@ try {
         firstName,
         middleName,
         lastName,
-        name: fullName,
+        name: firstName + " " + middleName + " " + lastName,
 
         father: fatherName,
         mother: motherName,
@@ -156,6 +156,7 @@ try {
         district: document.getElementById("district").value,
         state: document.getElementById("state").value,
         pinCode: document.getElementById("pinCode").value,
+        dobdocType: document.getElementById("dobDocType").value,
 
         photo,
         signature,
