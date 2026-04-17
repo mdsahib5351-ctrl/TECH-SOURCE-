@@ -144,7 +144,7 @@ if (!id) {
       docsHTML += imgBox(d.dobProof, "DOB Proof");
 
       if (d.isMinor) {
-        docsHTML += "<h4>Guardian Documents</h4>";
+        docsHTML += "<hr><h4>Guardian Documents</h4>";
         docsHTML += imgBox(d.guardianFront, "Guardian Front");
         docsHTML += imgBox(d.guardianBack, "Guardian Back");
       }
