@@ -9,7 +9,7 @@
 :root{
 --primary:#4CAF50;
 --primary-dark:#2e7d32;
---bg:#f9f9f9;
+--bg:white;
 --text:#222;
 --light:#666;
 --card:#ffffff;
@@ -20,7 +20,7 @@
 
 /* DARK MODE */
 body.dark{
---bg:#f9f9f9;
+--bg: white;
 --text:#f1f1f1;
 --light:#bbbbbb;
 --card:#1f1f1f;
