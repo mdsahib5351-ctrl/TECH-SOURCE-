@@ -9,7 +9,7 @@
 :root{
 --primary:#4CAF50;
 --primary-dark:#2e7d32;
---bg:white;
+--bg:#f9f9f9;
 --text:#222;
 --light:#666;
 --card:#ffffff;
@@ -20,7 +20,7 @@
 
 /* DARK MODE */
 body.dark{
---bg: white;
+--bg: #000;
 --text:#f1f1f1;
 --light:#bbbbbb;
 --card:#1f1f1f;
@@ -216,6 +216,9 @@ transform:translateY(-2px);
 ================================= */
 section{
 padding:80px 20px;
+background:var(--bg);
+color:var(--text);
+transition:.3s;
 }
 
 .section-title{
