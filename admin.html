@@ -1,154 +1,175 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <link rel="icon" href="https://i.ibb.co/TBzgsbMS/TS-logo-with-vibrant-gradients.jpg" type="image/jpeg">
-    <title>Admin Panel - TECH SOURCE</title>
-    <link rel="stylesheet" href="css/admin.css">
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <!-- JS -->
-    <script src="script/admin.js" defer></script>
-<body>
-    <h2>TECH SOURCE - Bills</h2>
-    <div class="top-controls">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TECH SOURCE HOME PAGE</title>
+<meta name="description" content="Tech Source Fast And Easy Services Provider and Multipel Service Collect">
 
-<input placeholder="search by mobile number" type="text" id="searchMobile" onkeyup="loadBills()">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
-<input placeholder="search by bill number" type="text" id="searchBill" onkeyup="loadBills()">
-<input type="date" id="dateFilter" onchange="loadBills()">
-<button class="clear" onclick="clearFilters()"></button>
-<button class="homebtn" onclick="window.open('index.html')"></button>
-</div>
-<!-- TAB BUTTONS -->
- <div class="tabbutton">
-<button class="tabBtn active" onclick="switchTab('all', this)">All Bills</button>
-<button class="tabBtn" onclick="switchTab('unpaid', this)">Unpaid Bills</button>
-<button class="tabBtn" onclick="switchTab('panlist', this)">Pan Applications</button>
-<button class="tabBtn" onclick="window.open('generatebill.html')">Generated Bills</button> 
-<button class="tabBtn" onclick="logout()">Logout</button>
-</div>
-<div class="myhistory">
-    <div class="income">
-        <h3>Paid Bills: <span id="paidCount">0</span></h3>
-        <h3>Unpaid Bills: <span id="unpaidCount">0</span></h3>
-        <h3>Cash Total: ₹ <span id="cashTotal">0</span></h3>
-        <h3>UPI Total: ₹ <span id="upiTotal">0</span></h3>
-    </div>
-
-    <div class="incomea">
-        <h3>Daily Income: ₹ <span id="dailyTotal">0</span></h3>
-        <h3>Monthly Income: ₹ <span id="monthlyTotal">0</span></h3>
-        <h3>Total Income: ₹ <span id="overallTotal">0</span></h3>
-    </div>
-</div>
-<table>
-<thead>
-<tr>
-<th>Bill No</th>
-<th>Date</th>
-<th>Name</th>
-<th>Mobile</th>
-<th>Payment Mode</th>
-<th>Due</th>
-<th>Status</th>
-<th>Action</th>
-<th>Total</th>
-</tr>
-</thead>
-<tbody id="billTable"></tbody>
-</table>
-    <div id="billList"></div>
-    <!-- Edit Modal -->
-<div class="modal-bg" id="editModal">
-  <div class="modal">
-    <h3>Edit Bill</h3>
-
-    <input type="text" id="editCustomerName" placeholder="Customer Name">
-    <input type="text" id="editCustomerMobile" placeholder="Customer Mobile">
-    <input type="number" id="editSubtotal" placeholder="Subtotal" readonly>
-    <input type="number" id="editPaidAmount" placeholder="Paid Amount">
-    <input type="number" id="editDiscount" placeholder="Discount">
-    <input type="number" id="editTotal" placeholder="Final Total" readonly>
-
-    <select id="editPaymentMode">
-        <option value="Cash">Cash</option>
-        <option value="UPI">UPI</option>
-        <option value="Bank">Bank</option>
-        <option value="Unpaid">Unpaid</option>
-    </select>
-
-    <select id="editPaymentStatus">
-        <option value="Paid">Paid</option>
-        <option value="Unpaid">Unpaid</option>
-    </select>
-
-    <div class="modal-buttons">
-        <button onclick="saveEdit()">Save</button>
-        <button onclick="closeModal()">Cancel</button>
-    </div>
-  </div>
-</div>
-<div class="modal-bg" id="panEditModal">
-  <div class="modal">
-    <h3>Edit PAN Application</h3>
-
-    <input type="text" id="panName" placeholder="Name">
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/index.css">
     
-    <select id="panGender">
-        <option>Male</option>
-        <option>Female</option>
-    </select>
+    <!-- Firebase -->
+    <script src="https://unpkg.com/qr-code-styling/lib/qr-code-styling.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <select id="panStatus">
-        <option value="pending">Pending</option>
-        <option value="approved">Approved</option>
-        <option value="rejected">Rejected</option>
-        <option value="under proccess">Under proccess</option>
-    </select>
-
-    <div class="modal-buttons">
-        <button onclick="savePanEdit()">Save</button>
-        <button onclick="closePanModal()">Cancel</button>
-    </div>
-  </div>
+    <!-- JS -->
+    <script src="script/index.js" defer></script>
+</head>
+<body>
+    <!-- ULTRA PRO LOADER -->
+<div id="loader">
+<div class="loader"></div>
 </div>
-<div class="modal-bg" id="panStatusEditModal">
-  <div class="modal">
-    <h3>Update PAN Status</h3>
 
-    <select id="panEditStatus">
-        <option value="pending">Pending</option>
-        <option value="approved">Approved</option>
-        <option value="rejected">Rejected</option>
-        <option value="under process">Under process</option>
-    </select>
+<header>
+<div class="logo">Tech Source</div>
 
-    <select id="panRemarkSelect" onchange="fillRemark()">
-    <option value="">-- Select Remark --</option>
-        <option value="Application is under process at Income Tax Department">Application is under process at Income Tax Department</option>
-        <option value="Your application is withheld for some reasons">Your application is withheld for some reasons</option>
-        <option value="APPLICATION IS UNDER OBJECTION CLEARANCE. PLEASE UPLOAD THE REVISED DOCUMENTS (SCANNED IMAGES).">APPLICATION IS UNDER OBJECTION CLEARANCE. PLEASE UPLOAD THE REVISED DOCUMENTS (SCANNED IMAGES).</option>
-        <option value="APPLICATION IS UNDER OBJECTION CLEARANCE AND IS NOT YET ATTACHED TO ANY BATCH. PLEASE GENERATE BATCH FOR PHYSICAL TRANSIT OF APPLICATIONS.">APPLICATION IS UNDER OBJECTION CLEARANCE AND IS NOT YET ATTACHED TO ANY BATCH. PLEASE GENERATE BATCH FOR PHYSICAL TRANSIT OF APPLICATIONS.</option>
-        <option value="Application is verified and is being moved for processing.">Application is verified and is being moved for processing.</option>
-        <option value="Application is rejected due to invalid documents.">Application is rejected due to invalid documents.</option>
-        <option value="YOUR APPLICATION IS UNDER PROCESSING - PAN UNDER ALLOTMENT, AWAITING CONFIRMATION FROM INCOME TAX DEPARTMENT.">YOUR APPLICATION IS UNDER PROCESSING - PAN UNDER ALLOTMENT, AWAITING CONFIRMATION FROM INCOME TAX DEPARTMENT.</option>
-        <option value="Approved successfully">Approved successfully</option>
-</select>
 
-    <select id="panPaymentStatus">
-        <option value="pending">Pending</option>
-        <option value="unpaid">Unpaid</option>
-        <option value="paid">Paid</option>
-    </select>
-
-    <input type="text" id="panEditRemark" placeholder="Enter Remark (optional)">
-    <input type="file" id="panDocument">
-
-    <div class="modal-buttons">
-        <button onclick="savePanStatusEdit()">Save</button>
-        <button onclick="closePanStatusEdit()">Cancel</button>
-    </div>
-  </div>
+<div class="hamburger" onclick="toggleMenu()">
+<div></div><div></div><div></div>
 </div>
+
+<nav id="navMenu">
+<a href="#home">Home</a>
+
+<div class="nav-item">
+<a href="javascript:void(0)" onclick="toggleServices()">Services ▾</a>
+<div class="dropdown" id="servicesDropdown">
+<a href="pan-service.html">PAN Card Service</a>
+<a href="aadhaar-service.html">Aadhaar Card Service</a>
+<a href="ration-service.html">Ration Card Service</a>
+<a href="#">Money Transfer</a>
+<a href="#">Recharge & Bill Pay</a>
+<a href="#">Document Services</a>
+</div>
+</div>
+<a href="#contact">Contact</a>
+<button class="btn" onclick="toggleDark()">🌙</button>
+</nav>
+</header>
+
+<section class="hero" id="home">
+  <img src="https://i.ibb.co/BV6f05k8/Whats-App-Image-2026-04-19-at-9-45-26-AM.jpg" alt="Tech Source Banner">
+</section>
+
+<section id="services">
+ <div class="section-title">Our Premium Services</div> <div class="cards"> 
+     <div class="card"><h3>PAN Card Service</h3><p>New PAN, Minor PAN, Correction & Reprint.</p><a href="pan-service.html" class="btn">Click</a></div>
+     <div class="card"><h3>Result</h3><p>Check Your Bihar Board Result Easy&Fast.</p><a href="result.html" class="btn">Click</a></div>
+     <div class="card"><h3>Aadhaar Card Service</h3><p>Address, C/O & Mobile Update.</p><a href="aadhaar-service.html" class="btn">Click</a></div> 
+     <div class="card"><h3>Ration Card Service</h3><p>New Apply, Add/Remove Member.</p><a href="ration-service.html" class="btn">Click</a></div>
+     <div class="card"><h3>Bill Genrate</h3><p>bill genrate and print.</p><a href="generatebill.html" class="btn">Click</a></div>
+     <div class="card"><h3>Bill History</h3><p>get all bill history.</p><a href="admin.html" class="btn">Click</a></div>
+     <div class="card"><h3>Download Bill</h3><p>Enter bill number and download your bill download.</p><a onclick="openDownloadBill()" class="btn">Click</a></div> 
+     <div class="card"><h3>Image To Link</h3><p>Upload image typy jpg,jpeg,png and more get link easy and fast.</p><a href="image.html" class="btn">Click</a></div>
+     <div class="card"><h3>Reedem Code Print</h3><p>Reedem Code Print Perfect A6 Paper Size.</p><a href="reedemprint.html" class="btn">Click</a></div> 
+     
+    </div> 
+</section>
+<section id="download-bill" style="display: none;">
+  <div class="section-title">Download Bill</div>
+
+  <div style="max-width:400px;margin:auto;text-align:center">
+    <input type="text" id="downloadBillNo" placeholder="Enter Bill Number (example: TS/0000/YYYY)">
+    <button class="btn" onclick="downloadBill()">Download Bill</button>
+  </div>
+</section>
+
+<section id="contact">
+
+<div class="section-title">Contact Us</div>
+
+<div class="contact-container">
+
+<div class="contact-info">
+  <iframe
+    src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3616.413705428625!2d86.88249227537496!3d24.986054677847463!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMjTCsDU5JzA5LjgiTiA4NsKwNTMnMDYuMiJF!5e0!3m2!1sen!2sin!4v1773753963904!5m2!1sen!2sin"
+    width="100%" height="300" style="border:0;" loading="lazy"></iframe></iframe>
+</div>
+<!-- FORM -->
+
+<form id="contactForm" class="contact-form">
+
+<input type="text" name="name" placeholder="Your Name" required>
+
+<input type="email" name="email" placeholder="Your Email" required>
+
+<textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+
+<input type="text" name="_gotcha" style="display:none">
+<button type="submit" class="btn" id="sendBtn">Send Message</button>
+<div id="formStatus"></div>
+</form></div></section>
+
+<footer>
+<div class="footer-grid">
+
+<!-- Brand -->
+<div class="box">
+<h2>Tech Source</h2>
+<p>Your trusted CSC & Digital Service Centre for online forms, government services, printing, PAN card, Aadhaar help and technology support.</p>
+
+<div class="social">
+<a href="https://www.instagram.com/official_tech_source/"><i class="fab fa-instagram"></i></a>
+<a href="https://www.youtube.com/@tsgaming73"><i class="fab fa-youtube"></i></a>
+<a href="https://wa.me/+919661905351"><i class="fab fa-whatsapp"></i></a>
+<a href="https://www.facebook.com/profile.php?id=100052604497079"><i class="fab fa-facebook-f"></i></a>
+<a href="mailto:mdsahib5351@gmail.com"><i class="fab fa-envelope"></i></a>
+</div>
+</div>
+
+<!-- Services -->
+<div class="box">
+<h3>Our Services</h3>
+<ul>
+<li><a href="pan-service.html">PAN Card Apply</a></li>
+<li><a href="aadhar-service.html">Aadhaar Update Help</a></li>
+<li><a href="#">Online Form Fillup</a></li>
+<li><a href="#">Train / Flight Booking</a></li>
+<li><a href="#">Print / Scan / Lamination</a></li>
+</ul>
+</div>
+
+<!-- Support -->
+<div class="box">
+<h3>Quick Links</h3>
+<ul>
+<li><a href="#home">Home</a></li>
+<li><a href="about.html">About Us</a></li>
+<li><a href="pan-service.html">Track Status</a></li>
+<li><a href="#contact">Contact Us</a></li>
+<li><a href="#">Working Hours</a></li>
+</ul>
+</div>
+
+<!-- Contact -->
+<div class="box">
+<h3>Newsletter</h3>
+<p>Get latest updates about government schemes, new services and offers.</p>
+
+<div class="newsletter">
+<input type="email" placeholder="Your email">
+<button><i class="fa-solid fa-arrow-right" style="font-size:40px; background-color: rgb(0, 90, 38);"></i></button>
+</div>
+
+<ul style="margin-top:18px;">
+<li><a href="privacy.html">Privacy Policy</a></li>
+<li><a href="terms.html">Terms & Conditions</a></li>
+<li><a href="refund.html">Refund Policy</a></li>
+</ul>
+</div>
+
+</div>
+
+<div class="bottom">
+© 2026 Tech Source CSC Centre. All Rights Reserved.
+</div>
+</footer>
+</body>
+</html>
