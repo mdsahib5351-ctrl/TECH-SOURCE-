@@ -40,49 +40,46 @@ window.addEventListener("load", animateCards);
 
 
 // ===============================
-// CONTACT FORM
+// CONTACT FORM (FIXED)
 // ===============================
-const form = document.getElementById("contactForm");
-const status = document.getElementById("formStatus");
-const btn = document.getElementById("sendBtn");
+const contactForm = document.getElementById("contactForm");
+const formStatus = document.getElementById("formStatus");
+const sendBtn = document.getElementById("sendBtn");
 
-if(form){
-form.addEventListener("submit", async function(e){
+if (contactForm) {
+  contactForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
 
-  e.preventDefault();
+    sendBtn.innerText = "Sending...";
+    sendBtn.disabled = true;
 
-  btn.innerText="Sending...";
-  btn.disabled=true;
+    let data = new FormData(contactForm);
 
-  let data = new FormData(form);
+    try {
+      let response = await fetch("https://formspree.io/f/xgonwgrr", {
+        method: "POST",
+        body: data,
+        headers: { Accept: "application/json" }
+      });
 
-  try{
-    let response = await fetch("https://formspree.io/f/xgonwgrr",{
-      method:"POST",
-      body:data,
-      headers:{'Accept':'application/json'}
-    });
+      if (response.ok) {
+        formStatus.innerHTML = "✅ Message sent successfully!";
+        formStatus.style.color = "green";
+        contactForm.reset();
+      } else {
+        formStatus.innerHTML = "❌ Something went wrong!";
+        formStatus.style.color = "red";
+      }
 
-    if(response.ok){
-      status.innerHTML="✅ Message sent successfully!";
-      status.style.color="green";
-      form.reset();
-    }else{
-      status.innerHTML="❌ Something went wrong!";
-      status.style.color="red";
+    } catch (error) {
+      formStatus.innerHTML = "❌ Network error!";
+      formStatus.style.color = "red";
     }
 
-  }catch(error){
-    status.innerHTML="❌ Network error!";
-    status.style.color="red";
-  }
-
-  btn.innerText="Send Message";
-  btn.disabled=false;
-
-});
+    sendBtn.innerText = "Send Message";
+    sendBtn.disabled = false;
+  });
 }
-
 
 // ===============================
 // LOADER
