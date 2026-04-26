@@ -1,4 +1,3 @@
-
 const firebaseConfig={
 apiKey:"AIzaSyDZ-NvSzXJrH8YyvI5GWVWRtZnSNe0NAxU",
 authDomain:"tech-source-bill.firebaseapp.com",
