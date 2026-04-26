@@ -170,6 +170,11 @@
 
 <div class="form-grid">
   <div class="form-group">
+    <label>Pin Code:</label>
+    <input type="text" id="pinCode" maxlength="6" pattern="[0-9]{6}" required oninput="fetchAddress()">
+  </div>
+
+  <div class="form-group">
     <label>Flat No/C/O:</label>
     <input type="text" id="flatNo" required>
   </div>
@@ -179,11 +184,17 @@
     <input type="text" id="villageCity" required>
   </div>
 
-    <div class="form-group">
-      <label>Post Office:</label>
-      <input type="text" id="postOffice" required>
-    </div>
+<div class="form-group">
+  <label>Post Office:</label>
 
+  <!-- Dropdown -->
+  <select id="postOffice">
+    <option value="">Select Post Office</option>
+  </select>
+
+  <!-- Manual Input (hidden by default) -->
+  <input type="text" id="manualPO" placeholder="Post Office not found? Type here" style="display:none; margin-top:8px;">
+      </div>
       <div class="form-group">
         <label>Sub Division:</label>
         <input type="text" id="subDivision" required>
@@ -198,11 +209,6 @@
       <label>State:</label>
       <input type="text" id="state" required>
     </div>
-
-    <div class="form-group">
-      <label>Pin Code:</label>
-      <input type="text" id="pinCode" maxlength="6" required>
-</div>
 </div>
 
 <h3>Documents Type</h3>
@@ -278,7 +284,6 @@
     <label>Guardian Aadhaar Back</label>
     <input type="file" id="guardianAadhaarBack">
   </div>
-
 </div>
 <br>
 
