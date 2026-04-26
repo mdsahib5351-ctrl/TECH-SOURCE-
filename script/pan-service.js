@@ -197,10 +197,16 @@ let [photo, signature, aadhaarFront, aadhaarBack, dobProof] =
         createdAt: new Date()
     };
 
-    await db.collection("applications").add(formData);
+   await db.collection("applications").add(formData);
 
-    localStorage.setItem("ackNo", ackNo);
-    window.location.href = "payment.html?ack=" + ackNo;
+// ✅ PDF generate
+generatePDF(formData);
+
+// thoda delay (important)
+setTimeout(() => {
+  localStorage.setItem("ackNo", ackNo);
+  window.location.href = "payment.html?ack=" + ackNo;
+}, 1500);
 
 } catch(err) {
     alert("Error: " + err);
