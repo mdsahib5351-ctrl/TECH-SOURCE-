@@ -2,102 +2,209 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" href="https://i.ibb.co/TBzgsbMS/TS-logo-with-vibrant-gradients.jpg" type="image/jpeg">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aadhaar Card Service</title>
+<title>Aadhaar Firebase Portal</title>
 
-<style>
-body{
-  font-family: Arial, sans-serif;
-  background:#f5f5f5;
-  margin:0;
-  padding:0;
-}
-
-header{
-  background:#4CAF50;
-  color:white;
-  padding:20px;
-  text-align:center;
-}
-
-.container{
-  max-width:900px;
-  margin:40px auto;
-  background:white;
-  padding:30px;
-  border-radius:12px;
-  box-shadow:0 5px 20px rgba(0,0,0,0.1);
-}
-
-h2{
-  color:#4CAF50;
-  margin-top:30px;
-}
-
-ul{
-  line-height:2;
-}
-
-.price-box{
-  background:#e3f2fd;
-  padding:20px;
-  border-radius:10px;
-  margin-top:20px;
-}
-
-.btn{
-  display:inline-block;
-  margin-top:25px;
-  padding:12px 25px;
-  background:#4CAF50;
-  color:white;
-  text-decoration:none;
-  border-radius:8px;
-}
-
-.btn:hover{
-  background:#4CAF50;
-}
-</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <link rel="stylesheet" href="css/aadhaar-service.css">
 </head>
-<body>
 
+<body>
 <header>
-<h1>Aadhaar Card Service</h1>
+  <div class="header-inner">
+    <div>
+      <h1>Aadhaar Service Portal</h1>
+      <div class="header-sub">Book, track and reschedule appointments</div>
+    </div>
+    <span class="badge" style="background:#fff;color:#0b5ed7;">Tech Source</span>
+  </div>
 </header>
 
-<div class="container">
+<main>
+  <div id="homePage" class="container">
+    <div class="home-grid">
+      <div class="card home-card" role="button" tabindex="0" onclick="openBook()" onkeydown="handleCardKey(event, openBook)">
+        <h2>📅</h2><h3>Book Appointment</h3><p>New Aadhaar update appointment</p>
+      </div>
+      <div class="card home-card" role="button" tabindex="0" onclick="openTrack()" onkeydown="handleCardKey(event, openTrack)">
+        <h2>🔍</h2><h3>Track Appointment</h3><p>Check appointment status</p>
+      </div>
+      <div class="card home-card" role="button" tabindex="0" onclick="openReschedule()" onkeydown="handleCardKey(event, openReschedule)">
+        <h2>🔄</h2><h3>Reschedule Appointment</h3><p>Change appointment date/time</p>
+      </div>
+    </div>
+  </div>
 
-<h2>Available Services</h2>
+  <div id="bookPage" class="container hidden">
+    <div class="stepbar" aria-label="Appointment progress">
+      <div id="s1" class="step active">1. Personal Details</div>
+      <div id="s2" class="step">2. Service Details</div>
+      <div id="s3" class="step">3. Review</div>
+      <div id="s4" class="step">4. Submit / PDF</div>
+    </div>
 
-<div class="price-box">
-<p><strong>Address Update:</strong> ₹150</p>
-<p><strong>C/O Update:</strong> ₹150</p>
-<p><strong>Mobile Number Update:</strong> ₹150</p>
-<p><strong>Without Document Address Update:</strong> ₹150</p>
-</div>
+    <section id="step1" class="card">
+      <h3>Personal Details</h3>
 
-<h2>Required Documents</h2>
-<ul>
-<li>✔ Aadhaar Number</li>
-<li>✔ Registered Mobile Number</li>
-<li>✔ Address Proof (if required)</li>
-</ul>
+      <label for="name">Full Name</label>
+      <input id="name" autocomplete="name" placeholder="Enter full name">
 
-<h2>Processing Time</h2>
-<p>⏳ 1–7 Working Days</p>
+      <label for="mobile">Mobile Number</label>
+      <input id="mobile" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="Enter 10 digit mobile number">
 
-<h2>Important Note</h2>
-<p>All updates are done as per UIDAI guidelines.</p>
+      <label for="aadhaar">Aadhaar Number</label>
+      <input id="aadhaar" inputmode="numeric" maxlength="12" placeholder="Enter 12 digit Aadhaar number" oninput="showServices()">
+      <p class="hint">Service options will appear after a valid 12 digit Aadhaar number.</p>
 
-<h2>Contact For Apply</h2>
-<p>📞 Mobile: 9661905351</p>
-<p> @ E-mail: mdsahib5351@gmail.com</p>  
+      <div id="serviceOptions" class="options hidden" aria-label="Service options">
+        <div class="opt" role="button" tabindex="0" onclick="selectService(this,'Address With Documents')" onkeydown="handleServiceKey(event,this,'Address With Documents')">Address With Documents</div>
+        <div class="opt" role="button" tabindex="0" onclick="selectService(this,'Address Without Documents')" onkeydown="handleServiceKey(event,this,'Address Without Documents')">Address Without Documents</div>
+        <div class="opt" role="button" tabindex="0" onclick="selectService(this,'C/O Update')" onkeydown="handleServiceKey(event,this,'C/O Update')">C/O Update</div>
+        <div class="opt" role="button" tabindex="0" onclick="selectService(this,'Mobile Number Update')" onkeydown="handleServiceKey(event,this,'Mobile Number Update')">Mobile Number Update</div>
+      </div>
 
-<a href="index.html" class="btn">⬅ Back to Home</a>
+      <div class="btn-row">
+        <button class="secondary" type="button" onclick="goHome()">Back</button>
+        <button type="button" onclick="goStep2()">Next</button>
+      </div>
+    </section>
 
-</div>
+    <section id="step2" class="card hidden">
+      <h3>Service Details</h3>
+      <p>Selected Service: <span id="selectedServiceText" class="badge"></span></p>
 
+      <div id="withoutDocSection" class="hidden">
+        <label for="newAddress">New Address</label>
+        <textarea id="newAddress" rows="3" placeholder="Enter new address"></textarea>
+
+        <label for="withoutDocNote">Reason / Note</label>
+        <textarea id="withoutDocNote" rows="2" placeholder="Enter note"></textarea>
+      </div>
+
+      <div id="coSection" class="hidden">
+        <label for="relationType">Relation Type</label>
+        <select id="relationType">
+          <option value="">Select relation</option>
+          <option>Father</option>
+          <option>Mother</option>
+          <option>Spouse</option>
+          <option>Guardian</option>
+        </select>
+
+        <label for="coName">C/O Name</label>
+        <input id="coName" placeholder="Enter C/O name">
+
+        <label for="coAddress">Address</label>
+        <textarea id="coAddress" rows="3" placeholder="Enter address"></textarea>
+      </div>
+
+      <div id="mobileUpdateSection" class="hidden">
+        <label for="oldMobile">Old Mobile Number</label>
+        <input id="oldMobile" inputmode="numeric" maxlength="10" placeholder="Enter old mobile number">
+
+        <label for="newMobile">New Mobile Number</label>
+        <input id="newMobile" inputmode="numeric" maxlength="10" placeholder="Enter new mobile number">
+      </div>
+
+      <div id="docSection" class="hidden">
+        <label for="docType">Document Type</label>
+        <select id="docType">
+          <option value="">Select document type</option>
+          <option>Electricity Bill</option>
+          <option>Bank Passbook</option>
+          <option>Voter ID</option>
+          <option>Passport</option>
+          <option>Ration Card</option>
+          <option>Other</option>
+        </select>
+
+        <label for="documentFile">Upload Document</label>
+        <input type="file" id="documentFile" accept="image/*,.pdf">
+        <p class="hint">PDF or image only, maximum 10 MB.</p>
+
+        <label for="docAddress">New Address</label>
+        <textarea id="docAddress" rows="3" placeholder="Enter new address"></textarea>
+      </div>
+
+      <div class="date-time-box">
+        <h3>Choose Appointment Date & Time</h3>
+
+        <label for="appointmentDate">Appointment Date</label>
+        <input type="date" id="appointmentDate" onchange="renderTimeSlots()">
+
+        <label>Available Time Slots</label>
+        <input type="hidden" id="appointmentTime">
+
+        <div id="timeSlots" class="time-slots">
+          <p style="grid-column:1/-1;color:#777;">Please select date first</p>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="secondary" type="button" onclick="backStep1()">Back</button>
+        <button type="button" onclick="goReview()">Review</button>
+      </div>
+    </section>
+
+    <section id="step3" class="card hidden">
+      <h3>Review Appointment</h3>
+      <div id="reviewBox" class="review-box"></div>
+
+      <div class="btn-row">
+        <button class="secondary" type="button" onclick="backStep2()">Back</button>
+        <button id="submitBtn" class="success" type="button" onclick="submitAppointment()">Submit & Download PDF</button>
+      </div>
+    </section>
+
+    <section id="step4" class="card hidden">
+      <div class="success-box">
+        <h2>✅ Appointment Submitted</h2>
+        <p>Your Appointment ID:</p>
+        <h2 id="finalId"></h2>
+        <div class="inline-actions">
+          <button type="button" onclick="downloadPDF()">Download PDF Again</button>
+          <button class="secondary" type="button" onclick="goHome()">Go Home</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="trackPage" class="container hidden">
+    <section class="card">
+      <h3>Track Appointment</h3>
+      <label for="trackId">Appointment ID</label>
+      <input id="trackId" placeholder="Enter Appointment ID, example TS-123456">
+      <button class="full" type="button" onclick="trackAppointment()">Search</button>
+      <div id="trackResult" style="margin-top:20px;"></div>
+      <button class="secondary full" type="button" onclick="goHome()">Back Home</button>
+    </section>
+  </div>
+
+  <div id="reschedulePage" class="container hidden">
+    <section class="card">
+      <h3>Reschedule Appointment</h3>
+
+      <label for="resId">Appointment ID</label>
+      <input id="resId" placeholder="Enter Appointment ID">
+
+      <label for="resDate">New Date</label>
+      <input type="date" id="resDate" onchange="renderRescheduleSlots()">
+
+      <label>New Time</label>
+      <input type="hidden" id="resTime">
+      <div id="resTimeSlots" class="time-slots">
+        <p style="grid-column:1/-1;color:#777;">Please select date first</p>
+      </div>
+
+      <button class="full" type="button" onclick="rescheduleAppointment()">Reschedule</button>
+      <button class="secondary full" type="button" onclick="goHome()">Back Home</button>
+      <div id="resResult" style="margin-top:20px;"></div>
+    </section>
+  </div>
+</main>
+
+<script src="script/aadhaa-service.js"></script>
 </body>
 </html>
