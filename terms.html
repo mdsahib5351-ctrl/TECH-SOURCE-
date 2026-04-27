@@ -1,81 +1,250 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" href="https://i.ibb.co/TBzgsbMS/TS-logo-with-vibrant-gradients.jpg" type="image/jpeg">
 <meta charset="UTF-8">
-<title>Terms & Conditions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Terms & Conditions | Tech Source</title>
+
+<link rel="icon" href="https://i.ibb.co/TBzgsbMS/TS-logo-with-vibrant-gradients.jpg">
+
+<style>
+
+/* ===== RESET ===== */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Segoe UI',sans-serif;
+}
+
+/* ===== BODY ===== */
+body{
+  background:#f4f6f9;
+  color:#222;
+  transition:.3s;
+}
+
+.dark{
+  background:#0d0d0d;
+  color:#fff;
+}
+
+/* ===== HEADER ===== */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px 8%;
+  background:#fff;
+  box-shadow:0 5px 20px rgba(0,0,0,0.05);
+}
+
+.dark .header{
+  background:#111;
+}
+
+.logo{
+  font-weight:bold;
+  font-size:20px;
+}
+
+.toggle{
+  background:#00ff66;
+  border:none;
+  padding:8px 12px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* ===== HERO ===== */
+.hero{
+  text-align:center;
+  padding:60px 20px;
+  background:linear-gradient(135deg,#00ff66,#006633);
+  color:#000;
+}
+
+.hero h1{
+  font-size:34px;
+  margin-bottom:10px;
+}
+
+/* ===== CONTAINER ===== */
+.container{
+  max-width:1000px;
+  margin:40px auto;
+  padding:20px;
+}
+
+/* ===== CARD ===== */
+.card{
+  background:#fff;
+  padding:25px;
+  border-radius:14px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.1);
+  margin-bottom:20px;
+  transition:.3s;
+}
+
+.dark .card{
+  background:#1a1a1a;
+}
+
+.card h2{
+  color:#00cc66;
+  margin-bottom:10px;
+}
+
+.card p{
+  line-height:1.7;
+  color:#555;
+}
+
+.dark .card p{
+  color:#ccc;
+}
+
+/* ===== FOOTER ===== */
+.footer{
+  text-align:center;
+  padding:25px;
+  background:#000;
+  color:#aaa;
+  margin-top:40px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:600px){
+  .hero h1{
+    font-size:26px;
+  }
+}
+
+</style>
 </head>
+
 <body>
 
-<h1>Terms & Conditions</h1>
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">Tech Source</div>
+  <button class="toggle" onclick="toggleDark()">🌙</button>
+</div>
 
-<p>
-Welcome to Ultimate Mini App. By accessing and using our website, you agree to comply with the following terms and conditions.
-</p>
+<!-- HERO -->
+<section class="hero">
+  <h1>Terms & Conditions</h1>
+  <p>Please read carefully before using our services</p>
+</section>
 
-<h3>1. सेवाओं का उपयोग (Use of Services)</h3>
-<p>
-हमारी वेबसाइट पर उपलब्ध सभी सेवाएं केवल वैध (legal) उद्देश्यों के लिए हैं।
-यूज़र द्वारा दी गई जानकारी सही और पूर्ण होनी चाहिए।
-</p>
+<!-- MAIN -->
+<div class="container">
 
-<h3>2. सेवा विवरण (Service Nature)</h3>
-<p>
-हम डिजिटल सेवाएं प्रदान करते हैं जैसे PAN card assistance, Aadhaar services,
-billing, QR generation आदि।
-हम किसी सरकारी संस्था नहीं हैं, बल्कि एक service provider हैं।
-</p>
+  <div class="card">
+    <p>
+      Welcome to Ultimate Mini App. By accessing and using our website,
+      you agree to comply with the following terms and conditions.
+    </p>
+  </div>
 
-<h3>3. भुगतान (Payments)</h3>
-<p>
-सभी भुगतान सुरक्षित payment gateways के माध्यम से किए जाते हैं।
-भुगतान करते समय यूज़र द्वारा दी गई जानकारी सही होनी चाहिए।
-</p>
+  <div class="card">
+    <h2>1. Use of Services</h2>
+    <p>
+      हमारी वेबसाइट पर उपलब्ध सभी सेवाएं केवल वैध (legal) उद्देश्यों के लिए हैं।
+      यूज़र द्वारा दी गई जानकारी सही और पूर्ण होनी चाहिए।
+    </p>
+  </div>
 
-<h3>4. Refund & Cancellation</h3>
-<p>
-Refund और cancellation हमारी Refund Policy के अनुसार ही लागू होंगे।
-कृपया विस्तृत जानकारी के लिए हमारी Refund Policy देखें।
-</p>
+  <div class="card">
+    <h2>2. Service Nature</h2>
+    <p>
+      हम डिजिटल सेवाएं प्रदान करते हैं जैसे PAN card assistance,
+      Aadhaar services, billing और QR generation।
+      हम कोई सरकारी संस्था नहीं हैं, बल्कि एक service provider हैं।
+    </p>
+  </div>
 
-<h3>5. सेवा में बदलाव (Service Changes)</h3>
-<p>
-हम बिना किसी पूर्व सूचना के सेवाओं में बदलाव या बंद करने का अधिकार रखते हैं।
-</p>
+  <div class="card">
+    <h2>3. Payments</h2>
+    <p>
+      सभी भुगतान सुरक्षित payment gateways के माध्यम से किए जाते हैं।
+      भुगतान करते समय यूज़र द्वारा दी गई जानकारी सही होनी चाहिए।
+    </p>
+  </div>
 
-<h3>6. जिम्मेदारी (Limitation of Liability)</h3>
-<p>
-हम किसी भी प्रकार के indirect, incidental या consequential नुकसान के लिए जिम्मेदार नहीं होंगे।
-</p>
+  <div class="card">
+    <h2>4. Refund & Cancellation</h2>
+    <p>
+      Refund और cancellation हमारी Refund Policy के अनुसार ही लागू होंगे।
+      कृपया अधिक जानकारी के लिए Refund Policy देखें।
+    </p>
+  </div>
 
-<h3>7. User Responsibility</h3>
-<p>
-यूज़र अपनी जानकारी की गोपनीयता और सुरक्षा के लिए स्वयं जिम्मेदार है।
-गलत जानकारी देने पर सेवा में देरी या अस्वीकृति हो सकती है।
-</p>
+  <div class="card">
+    <h2>5. Service Changes</h2>
+    <p>
+      हम बिना किसी पूर्व सूचना के सेवाओं में बदलाव या बंद करने का अधिकार रखते हैं।
+    </p>
+  </div>
 
-<h3>8. Third-Party Services</h3>
-<p>
-कुछ सेवाएं third-party providers के माध्यम से प्रदान की जाती हैं।
-उनकी सेवाओं में देरी या समस्या के लिए हम जिम्मेदार नहीं हैं।
-</p>
+  <div class="card">
+    <h2>6. Limitation of Liability</h2>
+    <p>
+      हम किसी भी प्रकार के indirect या नुकसान के लिए जिम्मेदार नहीं होंगे।
+    </p>
+  </div>
 
-<h3>9. Privacy</h3>
-<p>
-यूज़र की जानकारी हमारी Privacy Policy के अनुसार सुरक्षित रखी जाती है।
-</p>
+  <div class="card">
+    <h2>7. User Responsibility</h2>
+    <p>
+      यूज़र अपनी जानकारी की सुरक्षा के लिए स्वयं जिम्मेदार है।
+    </p>
+  </div>
 
-<h3>10. Changes to Terms</h3>
-<p>
-हम समय-समय पर इन Terms & Conditions को अपडेट कर सकते हैं।
-</p>
+  <div class="card">
+    <h2>8. Third-Party Services</h2>
+    <p>
+      कुछ सेवाएं third-party providers के माध्यम से प्रदान की जाती हैं।
+    </p>
+  </div>
 
-<h3>11. Contact Information</h3>
-<p>
-किसी भी प्रश्न के लिए संपर्क करें:
-<br>
-Email: mdsahib5351@gmail.com
-</p>
+  <div class="card">
+    <h2>9. Privacy</h2>
+    <p>
+      यूज़र की जानकारी हमारी Privacy Policy के अनुसार सुरक्षित रखी जाती है।
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>10. Changes to Terms</h2>
+    <p>
+      हम समय-समय पर इन Terms को अपडेट कर सकते हैं।
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>11. Contact</h2>
+    <p>
+      किसी भी प्रश्न के लिए संपर्क करें:
+      <br><br>
+      📧 Email: <b>mdsahib5351@gmail.com</b>
+    </p>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  © 2026 Tech Source | All Rights Reserved
+</div>
+
+<!-- JS -->
+<script>
+function toggleDark(){
+  document.body.classList.toggle("dark")
+}
+</script>
 
 </body>
 </html>
