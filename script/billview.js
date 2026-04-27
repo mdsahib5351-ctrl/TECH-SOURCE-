@@ -1,328 +1,355 @@
-const firebaseConfig = {
-  apiKey: "AIzaSyDZ-NvSzXJrH8YyvI5GWVWRtZnSNe0NAxU",
-  authDomain: "tech-source-bill.firebaseapp.com",
-  projectId: "tech-source-bill"
+const firebaseConfig={
+apiKey:"AIzaSyDZ-NvSzXJrH8YyvI5GWVWRtZnSNe0NAxU",
+authDomain:"tech-source-bill.firebaseapp.com",
+projectId:"tech-source-bill"
 };
 
 firebase.initializeApp(firebaseConfig);
 
-const db = firebase.firestore();
+const db=firebase.firestore();
 
 let amount = 0;
+let upiId = "7781826687@axl";
+let name = "TECH SOURCE";
 let currentData = null;
-let currentDocRef = null;
-let cashfree = null;
+let serviceNames = "";
 
-const billDetails = document.getElementById("billDetails");
-const payBtn = document.getElementById("payBtn");
-const paidStamp = document.getElementById("paidStamp");
-const gatewayText = document.getElementById("gatewayText");
-const params = new URLSearchParams(window.location.search);
-const billNo = params.get("billNo");
-const docId = params.get("id");
-const returnedCashfreeOrderId = params.get("cf_order_id");
-const API_BASE_URL =
-  window.location.protocol === "file:" ? "http://localhost:3000" : "";
+const billDetails=document.getElementById("billDetails");
 
-payBtn.addEventListener("click", startCashfreePayment);
+const params=new URLSearchParams(window.location.search);
 
-loadBill();
+const billNo=params.get("billNo");
+const docId=params.get("id");
 
-async function loadBill() {
-  if (!billNo && !docId) {
-    billDetails.innerHTML = "Bill ID missing";
-    payBtn.style.display = "none";
-    return;
-  }
+if(!billNo && !docId){
 
-  try {
-    let snapshot;
+billDetails.innerHTML="Bill ID missing";
 
-    if (docId) {
-      currentDocRef = db.collection("bills").doc(docId);
-      snapshot = await currentDocRef.get();
+}else{
 
-      if (!snapshot.exists) {
-        billDetails.innerHTML = "Bill not found";
-        payBtn.style.display = "none";
-        return;
-      }
+let query;
 
-      currentData = snapshot.data();
-    } else {
-      snapshot = await db.collection("bills").where("billNo", "==", billNo).get();
-
-      if (snapshot.empty) {
-        billDetails.innerHTML = "Bill not found";
-        payBtn.style.display = "none";
-        return;
-      }
-
-      currentDocRef = snapshot.docs[0].ref;
-      currentData = snapshot.docs[0].data();
-    }
-
-    renderBill(currentData);
-
-    if (returnedCashfreeOrderId) {
-      await verifyCashfreePayment(returnedCashfreeOrderId);
-    }
-  } catch (error) {
-    billDetails.innerHTML = "Bill load nahi ho paya";
-    console.error(error);
-  }
+if(docId){
+query=db.collection("bills").doc(docId).get();
+}else{
+query=db.collection("bills").where("billNo","==",billNo).get();
 }
 
-function renderBill(data) {
-  const servicesHTML = (data.services || [])
-    .map(
-      (service) => `
-        <tr>
-          <td>${escapeHTML(service.name)}</td>
-          <td>${Number(service.qty || 0)}</td>
-          <td>₹${Number(service.price || 0)}</td>
-          <td>₹${Number(service.qty || 0) * Number(service.price || 0)}</td>
-        </tr>
-      `
-    )
-    .join("");
+query.then(snapshot=>{
 
-  const totalAmount = Number(data.totalAmount || 0);
-  const paidAmount = Number(data.paidAmount || 0);
-  const dueAmount = Math.max(totalAmount - paidAmount, 0);
-  amount = paidAmount <= 0 ? totalAmount : dueAmount;
+let data;
 
-  billDetails.innerHTML = `
-    <p class="billno">
-      <span><b>Bill No:</b> ${escapeHTML(data.billNo || "")}</span>
-      <span><b>Date:</b> ${formatBillDate(data.date)}</span>
-    </p>
+if(docId){
 
-    <p class="name"><b>Name:</b> ${escapeHTML(data.customerName || "")}</p>
-    <p class="name"><b>Mobile:</b> ${escapeHTML(data.customerMobile || "")}</p>
-
-    <table>
-      <thead>
-        <tr>
-          <th>Service</th>
-          <th>Qty</th>
-          <th>Price</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody>${servicesHTML}</tbody>
-    </table>
-
-    <div class="summary-wrap">
-      <table class="summary-table">
-        ${
-          Number(data.discount || 0) > 0
-            ? `<tr><td>Subtotal</td><td>₹${Number(data.subtotal || 0)}</td></tr>`
-            : ""
-        }
-        ${
-          Number(data.discount || 0) > 0
-            ? `<tr><td>Discount</td><td>₹${Number(data.discount || 0)}</td></tr>`
-            : ""
-        }
-        <tr><td><b>Total</b></td><td><b>₹${totalAmount}</b></td></tr>
-        ${
-          paidAmount > 0
-            ? `<tr><td>Paid</td><td style="color:green;">₹${paidAmount}</td></tr>`
-            : ""
-        }
-        ${
-          dueAmount > 0
-            ? `<tr><td><b>Due</b></td><td style="color:red; font-weight:bold;">₹${dueAmount}</td></tr>`
-            : ""
-        }
-      </table>
-
-      <div class="payment-info">
-        <p><b>Payment Status:</b> ${escapeHTML(data.paymentStatus || "Unpaid")}</p>
-        ${
-          data.paymentMode && data.paymentMode !== "Unpaid"
-            ? `<p><b>Payment Mode:</b> ${escapeHTML(data.paymentMode)}</p>`
-            : ""
-        }
-      </div>
-    </div>
-  `;
-
-  updatePaymentUI(data.paymentStatus === "Paid" || amount <= 0);
+if(!snapshot.exists){
+billDetails.innerHTML="Bill not found";
+return;
 }
 
-async function startCashfreePayment() {
-  if (!currentData) {
-    alert("Bill abhi load nahi hua");
-    return;
-  }
+data=snapshot.data();
+currentData = data;
 
-  if (amount <= 0) {
-    alert("No payment due");
-    return;
-  }
+}else{
 
-  payBtn.disabled = true;
-  payBtn.textContent = "Opening...";
+if(snapshot.empty){
+billDetails.innerHTML="Bill not found";
+return;
+}
 
-  try {
-    const cashfreeSdk = await getCashfree();
-    const response = await fetch(apiUrl("/api/cashfree/create-order"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        billNo: currentData.billNo,
-        docId,
-        amount,
-        customerName: currentData.customerName,
-        customerMobile: currentData.customerMobile,
-        customerEmail: currentData.customerEmail
-      })
+data=snapshot.docs[0].data();
+}
+
+currentData = data;  // ✅ yahan add karo (common for both cases)
+
+let servicesHTML="";
+
+if(data.services){
+
+data.services.forEach(s=>{
+
+servicesHTML+=`
+<tr>
+<td>${s.name}</td>
+<td>${s.qty}</td>
+<td>₹${s.price}</td>
+<td>₹${s.qty*s.price}</td>
+</tr>
+`;
+
+});
+
+}
+
+/* ✅ YAHI PAR ADD KARO */
+serviceNames = "";
+
+if(data.services){
+    serviceNames = data.services.map(s => s.name).join(", ");
+}
+
+/* Amount Calculation */
+
+const totalAmount = data.totalAmount || 0;
+const paidAmount = data.paidAmount || 0;
+const dueAmount = totalAmount - paidAmount;
+
+billDetails.innerHTML=`
+
+<p class="billno">
+
+  <span class="left">
+    <b>Bill No:</b> ${data.billNo}
+  </span>
+  <span class="date">
+    <b>Date:</b>
+    ${
+    data.date 
+    ? (data.date.toDate 
+        ? new Date(data.date.toDate()).toLocaleDateString('en-GB').replace(/\//g,'-')
+        : new Date(data.date).toLocaleDateString('en-GB').replace(/\//g,'-')
+      )
+    : ""
+    }
+  </span>
+
+</p>
+
+<p class="name"><b>Name:</b> ${data.customerName}</p>
+<p class="name"><b>Mobile:</b> ${data.customerMobile}</p>
+
+<table>
+
+<thead>
+<tr>
+<th>Service</th>
+<th>Qty</th>
+<th>Price</th>
+<th>Total</th>
+</tr>
+</thead>
+
+<tbody>
+
+${servicesHTML}
+
+</tbody>
+
+</table>
+<table style="width:100%; margin-top:10px;">
+
+<tr>
+
+<td colspan="2" style="border:none; padding:0;">
+
+<div style="display:flex; justify-content:space-between; align-items:flex-end;">
+
+<!-- LEFT SIDE (Amount Table) -->
+<div style="width:40%;">
+<table style="width:100%; border-collapse:collapse;">
+
+${(data.discount||0) > 0 ? `
+<tr>
+<td>Subtotal</td>
+<td>₹${data.subtotal||0}</td>
+</tr>` : ``}
+
+${(data.discount||0) > 0 ? `
+<tr>
+<td>Discount</td>
+<td>₹${data.discount||0}</td>
+</tr>` : ``}
+
+<tr>
+<td><b>Total</b></td>
+<td><b>₹${totalAmount}</b></td>
+</tr>
+
+${paidAmount > 0 ? `
+<tr>
+<td>Paid</td>
+<td style="color:green;">₹${paidAmount}</td>
+</tr>` : ``}
+
+${dueAmount > 0 ? `
+<tr>
+<td><b>Due</b></td>
+<td style="color:red; text-decoration:bold; font-weight:bold;"><b>₹${dueAmount}</b></td>
+</tr>` : ``}
+
+</table>
+</div>
+
+<!-- RIGHT SIDE (Payment Info) -->
+<div style="width:55%; text-align:right;">
+
+<p><b>Payment Status:</b> ${data.paymentStatus}</p>
+
+${data.paymentMode !== "Unpaid" ? `<p><b>Payment Mode:</b> ${data.paymentMode}</p>` : ``}
+
+</div>
+
+</div>
+
+</td>
+
+</tr>
+
+</table>
+
+`;
+/* QR Amount Logic */
+
+if(paidAmount <= 0){
+amount = totalAmount;
+}else{
+amount = dueAmount;
+}
+
+
+const upiLink=`upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR`;
+document.getElementById("qrcode").innerHTML = "";
+
+new QRCode(document.getElementById("qrcode"),{
+text:upiLink,
+width:120,
+height:120
+});
+
+/* Paid Stamp */
+
+if(data.paymentStatus==="Paid"){
+document.getElementById("paidStamp").style.display="block";
+document.getElementById("qrText").innerHTML="Payment Completed";
+
+// Pay button hide
+document.getElementById("payBtn").style.display="none";
+}
+
+});
+
+}
+/* PDF */
+
+async function downloadPDF(){
+
+// 🔴 Step 1: Sab button hide karo
+const buttons = document.querySelectorAll(".btn");
+buttons.forEach(btn => btn.style.display = "none");
+
+const invoice=document.getElementById("invoice");
+
+const canvas=await html2canvas(invoice,{
+scale:1.5,
+useCORS:true
+});
+
+const imgData=canvas.toDataURL("image/jpeg",0.8);
+
+const {jsPDF}=window.jspdf;
+
+const pdf=new jsPDF("p","mm","a4");
+
+const pdfWidth=210;
+const pdfHeight=(canvas.height*pdfWidth)/canvas.width;
+
+pdf.addImage(imgData,"JPEG",0,0,pdfWidth,pdfHeight);
+
+pdf.save(`Bill-${currentData.billNo}.pdf`);
+
+// 🔵 Step 2: Wapas show karo
+buttons.forEach(btn => btn.style.display = "inline-block");
+
+    }
+
+/* Print */
+
+function printBill(){
+
+window.print();
+
+}
+
+function openPayOptions(){
+    if(amount <= 0){
+        alert("No payment due");
+        return;
+    }
+
+    document.getElementById("payOptions").style.display = "flex";
+}
+
+function closePayOptions(){
+    document.getElementById("payOptions").style.display = "none";
+}
+function payUPI(){
+    const note = encodeURIComponent(
+        `Bill ${currentData.billNo} - ${serviceNames}`
+    );
+
+    const upiLink = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR&tn=${note}`;
+
+    window.location.href = upiLink;
+}
+
+function copyUPI(){
+    navigator.clipboard.writeText(upiId);
+    alert("UPI ID Copied: " + upiId);
+}
+
+function payWhatsApp(){
+    const msg = encodeURIComponent(
+        `Pay ₹${amount} to ${name}\nUPI: ${upiId}\nBill: ${currentData.billNo}`
+    );
+
+    window.open(`https://wame/91${mobile}?text=${msg}`, "_blank");
+}
+
+function requestToUser(){
+    const userUpi = document.getElementById("userUpi").value.trim();
+
+    if(!userUpi || !userUpi.includes("@")){
+        alert("Enter valid UPI ID");
+        return;
+    }
+
+    const note = encodeURIComponent(
+        `Bill ${currentData.billNo} - ${serviceNames}`
+    );
+
+    // 🔥 Trick: reverse payment link (user ke side open hoga)
+    const upiLink = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR&tn=${note}`;
+
+    alert("Request sent! Ask customer to approve payment.");
+
+    // 👉 user ko share karne ke liye WhatsApp open karo
+    const msg = encodeURIComponent(
+        `Payment Request\n\nPay ₹${amount} to ${name}\nUPI: ${upiId}\nBill: ${currentData.billNo}`
+    );
+
+    window.open(`https://wa.me/?text=${msg}`, "_blank");
+}
+
+function openQRPopup(){
+
+    const note = encodeURIComponent(
+        `Bill ${currentData.billNo} - ${serviceNames}`
+    );
+
+    const upiLink = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR&tn=${note}`;
+
+    document.getElementById("bigQR").innerHTML = "";
+
+    new QRCode(document.getElementById("bigQR"),{
+        text: upiLink,
+        width:200,
+        height:200
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || data.message || "Cashfree order create failed");
-    }
+    document.getElementById("qrAmountText").innerText = `Amount: ₹${amount}`;
 
-    await cashfreeSdk.checkout({
-      paymentSessionId: data.payment_session_id,
-      redirectTarget: "_self"
-    });
-  } catch (error) {
-    alert(error.message || "Payment start nahi ho paya");
-    payBtn.disabled = false;
-    payBtn.textContent = "Pay Now";
-  }
+    document.getElementById("qrPopup").style.display = "flex";
 }
 
-async function getCashfree() {
-  if (cashfree) return cashfree;
-
-  const response = await fetch(apiUrl("/api/cashfree/config"));
-  const config = await response.json();
-  cashfree = Cashfree({ mode: config.mode || "sandbox" });
-  return cashfree;
-}
-
-async function verifyCashfreePayment(orderId) {
-  try {
-    gatewayText.textContent = "Payment verify ho raha hai...";
-
-    const response = await fetch(apiUrl(`/api/cashfree/order-status/${encodeURIComponent(orderId)}`));
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Payment status check failed");
-    }
-
-    if (data.order_status === "PAID") {
-      await markBillPaid(data);
-      gatewayText.textContent = "Payment completed by Cashfree";
-      paidStamp.style.display = "block";
-      payBtn.style.display = "none";
-      alert("Payment successful");
-    } else {
-      gatewayText.textContent = `Payment status: ${data.order_status}`;
-      payBtn.disabled = false;
-      payBtn.textContent = "Pay Now";
-    }
-  } catch (error) {
-    gatewayText.textContent = "Payment verify nahi ho paya";
-    console.error(error);
-  }
-}
-
-async function markBillPaid(cashfreeOrder) {
-  if (!currentDocRef) return;
-
-  const paidAmount = Number(cashfreeOrder.order_amount || amount);
-  const totalAmount = Number(currentData.totalAmount || paidAmount);
-
-  await currentDocRef.update({
-    paidAmount: totalAmount,
-    paymentStatus: "Paid",
-    paymentMode: "Cashfree",
-    cashfreeOrderId: cashfreeOrder.order_id,
-    cashfreeCfOrderId: cashfreeOrder.cf_order_id || "",
-    cashfreePaidAmount: paidAmount,
-    cashfreeUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  });
-
-  currentData = {
-    ...currentData,
-    paidAmount: totalAmount,
-    paymentStatus: "Paid",
-    paymentMode: "Cashfree"
-  };
-
-  amount = 0;
-  renderBill(currentData);
-}
-
-function updatePaymentUI(isPaid) {
-  if (isPaid) {
-    paidStamp.style.display = "block";
-    gatewayText.textContent = "Payment Completed";
-    payBtn.style.display = "none";
-    return;
-  }
-
-  paidStamp.style.display = "none";
-  gatewayText.textContent = "Secure online payment by Cashfree";
-  payBtn.style.display = "block";
-  payBtn.disabled = false;
-  payBtn.textContent = "Pay Now";
-}
-
-async function downloadPDF() {
-  const buttons = document.querySelectorAll(".btn");
-  buttons.forEach((button) => {
-    button.style.display = "none";
-  });
-
-  const invoice = document.getElementById("invoice");
-  const canvas = await html2canvas(invoice, {
-    scale: 1.5,
-    useCORS: true
-  });
-
-  const imgData = canvas.toDataURL("image/jpeg", 0.8);
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF("p", "mm", "a4");
-  const pdfWidth = 210;
-  const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-  pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight);
-  pdf.save(`Bill-${currentData?.billNo || "TECH-SOURCE"}.pdf`);
-
-  buttons.forEach((button) => {
-    button.style.display = "inline-block";
-  });
-  updatePaymentUI(currentData?.paymentStatus === "Paid" || amount <= 0);
-}
-
-function printBill() {
-  window.print();
-}
-
-function formatBillDate(value) {
-  if (!value) return "";
-
-  const date = value.toDate ? value.toDate() : new Date(value);
-  return date.toLocaleDateString("en-GB").replace(/\//g, "-");
-}
-
-function escapeHTML(value) {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-function apiUrl(path) {
-  return `${API_BASE_URL}${path}`;
+function closeQR(){
+    document.getElementById("qrPopup").style.display = "none";
 }
