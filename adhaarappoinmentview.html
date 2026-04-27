@@ -615,7 +615,7 @@
     }
 
     async function loadAppointment(rawId, mode) {
-      const id = safe(rawId).trim().toUpperCase();
+      const id = mode === "docId" ? safe(rawId).trim() : safe(rawId).trim().toUpperCase();
       if (!id || id === "-") {
         showMessage("Appointment ID enter karein.", "warn");
         return;
