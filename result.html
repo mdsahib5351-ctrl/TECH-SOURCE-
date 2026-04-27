@@ -1,101 +1,300 @@
 <!DOCTYPE html>
-<html>  
+<html lang="en">
 <head>
-    <link rel="icon" href="https://i.ibb.co/TBzgsbMS/TS-logo-with-vibrant-gradients.jpg" type="image/jpeg">
-<title>Result</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Result Checker | Tech Source</title>
+
+<link rel="icon" href="https://i.ibb.co/TBzgsbMS/TS-logo-with-vibrant-gradients.jpg">
+
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background: rgb(216, 216, 216);
-    text-align: center;
-    margin: 0;
-    padding: 0;
+
+/* ===== RESET ===== */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Segoe UI',sans-serif;
 }
 
-h1 {
-    margin-top: 50px;
-    color: rgb(255, 255, 255);
+/* ===== BODY ===== */
+body{
+  background:#f5f5f5;
+  color:#222;
 }
 
-form {
-    background: rgb(255, 255, 255);
-    padding: 30px;
-    margin: 40px auto;
-    width: 300px;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    border: 5px solid rgb(0, 0, 0);
+/* ===== HEADER ===== */
+.header{
+  background:#fff;
+  padding:15px 8%;
+  border-bottom:1px solid #ddd;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
-.input input {
-    display: block;
-    width: 90%;
-    padding: 10px;
-    margin: 10px auto;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
+.logo{
+  font-weight:bold;
+  font-size:18px;
 }
 
-.input input:focus {
-    border-color: #4facfe;
-    outline: none;
+/* ===== MAIN ===== */
+.container{
+  max-width:400px;
+  margin:60px auto;
 }
 
-.button {
-    background: #4facfe;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
+/* ===== CARD ===== */
+.card{
+  background:#fff;
+  padding:25px;
+  border-radius:10px;
+  border:1px solid #ddd;
 }
 
-.button:hover {
-    background: #00c6ff;
+/* ===== TITLE ===== */
+h1{
+  text-align:center;
+  margin-bottom:20px;
+  font-size:22px;
 }
 
-p {
-    color: white;
+/* ===== INPUT ===== */
+.input input{
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  border:1px solid #ccc;
+  border-radius:6px;
+  font-size:15px;
 }
+
+.input input:focus{
+  border-color:#000;
+  outline:none;
+}
+
+/* ===== BUTTON ===== */
+.button{
+  width:100%;
+  padding:12px;
+  background:#000;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  font-size:15px;
+  cursor:pointer;
+}
+
+.button:hover{
+  background:#333;
+}
+
+/* ===== INFO ===== */
+.note{
+  font-size:12px;
+  color:#666;
+  margin-top:10px;
+  text-align:center;
+}
+
+/* ===== ERROR ===== */
+.error{
+  color:red;
+  font-size:13px;
+  margin-top:8px;
+  text-align:center;
+}
+
+/* ===== LOADER ===== */
+.loader{
+  display:none;
+  font-size:13px;
+  margin-top:10px;
+  text-align:center;
+}
+
+/* ===== FOOTER ===== */
+/* ===== FOOTER ===== */
+.footer{
+  margin-top:60px;
+  padding:50px 8% 20px;
+  background:#fff;
+  border-top:1px solid #ddd;
+}
+
+/* GRID */
+.footer-container{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:30px;
+}
+
+/* BOX */
+.footer-box h3,
+.footer-box h4{
+  margin-bottom:12px;
+  color:#000;
+}
+
+.footer-box p{
+  font-size:14px;
+  color:#555;
+  line-height:1.6;
+}
+
+/* LINKS */
+.footer-box ul{
+  list-style:none;
+}
+
+.footer-box ul li{
+  margin:8px 0;
+}
+
+.footer-box ul li a{
+  text-decoration:none;
+  color:#555;
+  font-size:14px;
+  transition:.3s;
+}
+
+.footer-box ul li a:hover{
+  color:#000;
+  padding-left:4px;
+}
+
+/* BOTTOM */
+.footer-bottom{
+  text-align:center;
+  margin-top:30px;
+  padding-top:15px;
+  border-top:1px solid #eee;
+  font-size:13px;
+  color:#777;
+}
+
 </style>
 </head>
+
 <body>
 
-<h1>Result</h1>
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">Tech Source</div>
+</div>
 
-<form onsubmit="checkresult(event)">
-<label class="input">
-    <input type="text" id="rollcode" placeholder="ENTER ROLL CODE">
-    <input type="number" id="rollnumber" placeholder="ENTER ROLL NUMBER">
-</label>
-<button type="submit" class="button">Submit</button>
-</form>
+<!-- MAIN -->
+<div class="container">
+
+  <div class="card">
+
+    <h1>Result Checker</h1>
+
+    <form onsubmit="checkResult(event)">
+
+      <div class="input">
+        <input type="text" id="rollcode" placeholder="Enter Roll Code">
+        <input type="number" id="rollnumber" placeholder="Enter Roll Number">
+      </div>
+
+      <button class="button">Submit</button>
+
+      <div class="loader" id="loader">Checking result...</div>
+      <div class="error" id="error"></div>
+
+    </form>
+
+    <div class="note">
+      Enter correct details as per admit card
+    </div>
+
+  </div>
+
+</div>
+
+<div class="footer">
+
+  <div class="footer-container">
+
+    <!-- Brand -->
+    <div class="footer-box">
+      <h3>Tech Source</h3>
+      <p>
+        Fast & secure digital service platform. 
+        Result checking, document services and more.
+      </p>
+    </div>
+
+    <!-- Links -->
+    <div class="footer-box">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Result</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+
+    <!-- Contact -->
+    <div class="footer-box">
+      <h4>Contact</h4>
+      <p>Email: mdsahib5351@gmail.com</p>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    © 2026 Tech Source | All Rights Reserved
+  </div>
+
+</div>
 
 <script>
-// page load hote hi roll code auto fill karega
-window.onload = function () {
-    let savedRollCode = localStorage.getItem("rollcode");
-    if (savedRollCode) {
-        document.getElementById("rollcode").value = savedRollCode;
-    }
+
+// ===== LOAD SAVED =====
+window.onload = () => {
+  let saved = localStorage.getItem("rollcode");
+  if(saved){
+    document.getElementById("rollcode").value = saved;
+  }
 };
 
-function checkresult(event) {
-    event.preventDefault();
+// ===== RESULT CHECK =====
+function checkResult(e){
+  e.preventDefault();
 
-    let rollcode = document.getElementById("rollcode").value;
-    let rollnumber = document.getElementById("rollnumber").value;
+  let rollcode = document.getElementById("rollcode").value.trim();
+  let rollnumber = document.getElementById("rollnumber").value.trim();
+  let error = document.getElementById("error");
+  let loader = document.getElementById("loader");
 
-    // roll code save kar lo
-    localStorage.setItem("rollcode", rollcode);
+  error.textContent = "";
 
-    let ref = `https://result.biharboardonline.org/result?roll_code=${rollcode}&roll_no=${rollnumber}`;
+  if(!rollcode || !rollnumber){
+    error.textContent = "Please fill all fields";
+    return;
+  }
 
-    // new tab me open
-    window.open(ref, "_blank");
+  if(rollnumber.length < 4){
+    error.textContent = "Invalid roll number";
+    return;
+  }
+
+  localStorage.setItem("rollcode", rollcode);
+
+  loader.style.display = "block";
+
+  let url = `https://matricbiharboard.com/result?roll_code=${rollcode}&roll_no=${rollnumber}`;
+
+  setTimeout(()=>{
+    loader.style.display = "none";
+    window.open(url, "_blank");
+  },800);
 }
+
 </script>
 
 </body>
