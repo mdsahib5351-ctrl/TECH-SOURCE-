@@ -93,11 +93,64 @@
           <h2>Change</h2><h3>Reschedule Appointment</h3><p>Change appointment date/time</p>
         </div>
       </div>
+
+      <section class="info-section">
+        <div class="section-head">
+          <span class="badge">How it works</span>
+          <h2>Aadhaar Appointment Booking Steps</h2>
+          <p>Simple process follow karein aur appointment receipt PDF download kar lein.</p>
+        </div>
+
+        <div class="steps-grid">
+          <div class="step-card">
+            <span>1</span>
+            <h3>Login / Register</h3>
+            <p>Apne email aur mobile number se secure account banayein.</p>
+          </div>
+          <div class="step-card">
+            <span>2</span>
+            <h3>Select Service</h3>
+            <p>Aadhaar number enter karke required update service choose karein.</p>
+          </div>
+          <div class="step-card">
+            <span>3</span>
+            <h3>Fill Details</h3>
+            <p>Address, C/O, mobile update ya document details complete karein.</p>
+          </div>
+          <div class="step-card">
+            <span>4</span>
+            <h3>Choose Slot</h3>
+            <p>Available date aur time slot select karke appointment review karein.</p>
+          </div>
+          <div class="step-card">
+            <span>5</span>
+            <h3>Submit & PDF</h3>
+            <p>Appointment submit karein aur receipt PDF download karein.</p>
+          </div>
+        </div>
+
+        <div class="price-panel">
+          <div>
+            <span class="badge light">Service Fee</span>
+            <h2>All Aadhaar appointment services</h2>
+            <p>Address update, C/O update, mobile number update aur document based appointment.</p>
+          </div>
+          <strong>Rs. 150</strong>
+        </div>
+      </section>
     </div>
 
     <div id="profilePage" class="container hidden">
-      <section class="card">
-        <h3>Profile</h3>
+      <section class="card profile-panel">
+        <div class="profile-hero">
+          <div class="profile-avatar-large" id="profilePageInitial">U</div>
+          <div>
+            <span class="badge">Account Profile</span>
+            <h2 id="profileHeroName">User</h2>
+            <p id="profileHeroEmail">user@example.com</p>
+          </div>
+        </div>
+
         <div class="profile-grid">
           <div class="profile-stat">
             <span>Name</span>
@@ -112,6 +165,12 @@
             <b id="profilePageMobile">-</b>
           </div>
         </div>
+
+        <div class="profile-note">
+          <h3>Appointment Access</h3>
+          <p>Is account se aap Aadhaar appointment book, track aur reschedule kar sakte hain.</p>
+        </div>
+
         <button class="secondary full" type="button" onclick="goHome()">Back Home</button>
       </section>
     </div>
@@ -265,8 +324,14 @@
       <section class="card">
         <h3>Reschedule Appointment</h3>
 
+        <label for="resOwnAppointments">Your Appointments</label>
+        <select id="resOwnAppointments" onchange="selectRescheduleAppointment()">
+          <option value="">Loading your appointments...</option>
+        </select>
+
         <label for="resId">Appointment ID</label>
-        <input id="resId" placeholder="Enter Appointment ID">
+        <input id="resId" placeholder="Select your appointment above" readonly>
+        <p class="hint">Security: sirf logged-in account ke appointments reschedule ho sakte hain.</p>
 
         <label for="resDate">New Date</label>
         <input type="date" id="resDate" onchange="renderRescheduleSlots()">
@@ -284,6 +349,28 @@
     </div>
   </div>
 </main>
+
+<footer class="site-footer">
+  <div class="footer-grid">
+    <div>
+      <h2>Tech Source</h2>
+      <p>Aadhaar appointment booking, tracking and reschedule support with simple digital receipt.</p>
+    </div>
+    <div>
+      <h3>Services</h3>
+      <a href="aadhaar-service.html">Aadhaar Appointment</a>
+      <a href="pan-service.html">PAN Card Service</a>
+      <a href="result.html">Result Check</a>
+    </div>
+    <div>
+      <h3>Support</h3>
+      <a href="index.html#contact">Contact</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms & Conditions</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 Tech Source. All Rights Reserved.</div>
+</footer>
 
 <script src="script/aadhaar-service.js"></script>
 </body>
