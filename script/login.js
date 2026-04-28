@@ -13,6 +13,48 @@ const firebaseConfig = {
 // FIREBASE START
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db = firebase.firestore();
+const ADMIN_EMAIL = "techsource@gmail.com";
+
+function getRedirectTarget(){
+  const params = new URLSearchParams(window.location.search);
+  const next = params.get("next");
+  if(next && /^[a-zA-Z0-9_-]+\.html(?:[?#].*)?$/.test(next)){
+    return next;
+  }
+  return "index.html";
+}
+
+async function ensureUserProfile(user, extra = {}){
+  const ref = db.collection("users").doc(user.uid);
+  const snap = await ref.get();
+  const baseProfile = {
+    name: extra.name || user.displayName || user.email.split("@")[0],
+    email: user.email,
+    phone: extra.phone || "",
+    mobile: extra.phone || "",
+    city: "",
+    address: "",
+    photoUrl: user.photoURL || "",
+    updatedAt: new Date()
+  };
+
+  if(snap.exists){
+    await ref.set({
+      email: user.email,
+      name: snap.data().name || baseProfile.name,
+      phone: snap.data().phone || snap.data().mobile || baseProfile.phone,
+      mobile: snap.data().mobile || snap.data().phone || baseProfile.mobile,
+      photoUrl: snap.data().photoUrl || baseProfile.photoUrl,
+      updatedAt: new Date()
+    }, { merge:true });
+  }else{
+    await ref.set({
+      ...baseProfile,
+      createdAt: new Date()
+    }, { merge:true });
+  }
+}
 
 
 // UI SWITCH LOGIN / SIGNUP
@@ -41,12 +83,10 @@ let email = document.getElementById("loginEmail").value;
 let password = document.getElementById("loginPassword").value;
 
 auth.signInWithEmailAndPassword(email, password)
-.then((userCredential)=>{
+.then(async (userCredential)=>{
 
 const user = userCredential.user;
-
-// ADMIN EMAIL
-const ADMIN_EMAIL = "techsource@gmail.com";
+await ensureUserProfile(user);
 
 // EMAIL CHECK
 if(user.email === ADMIN_EMAIL){
@@ -57,7 +97,7 @@ window.location.href = "admin.html";
 }else{
 
 // USER PANEL
-window.location.href = "generatebill.html";
+window.location.href = getRedirectTarget();
 
 }
 
@@ -76,15 +116,22 @@ document.querySelector(".credentials-panel.signup form")
 e.preventDefault();
 
 let username = document.getElementById("registerUsername").value;
+let mobile = document.getElementById("registerMobile").value.replace(/\D/g, "");
 let email = document.getElementById("registerEmail").value;
 let password = document.getElementById("registerPassword").value;
 
-auth.createUserWithEmailAndPassword(email, password)
-.then((userCredential)=>{
+if(mobile.length !== 10){
+alert("Valid 10 digit mobile number enter karein");
+return;
+}
 
-return userCredential.user.updateProfile({
+auth.createUserWithEmailAndPassword(email, password)
+.then(async (userCredential)=>{
+
+await userCredential.user.updateProfile({
 displayName: username
 });
+await ensureUserProfile(userCredential.user, { name: username, phone: mobile });
 
 })
 .then(()=>{
