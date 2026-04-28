@@ -220,6 +220,153 @@ header h1{font-size:24px;margin:0}
 .home-card h3{margin:0 0 8px;font-size:20px}
 .home-card p{margin:0;color:var(--muted)}
 
+.info-section{
+  margin-top:24px;
+}
+
+.section-head{
+  margin-bottom:18px;
+}
+
+.section-head h2{
+  margin:12px 0 8px;
+  font-size:28px;
+  color:var(--ink);
+}
+
+.section-head p{
+  margin:0;
+  color:var(--muted);
+}
+
+.steps-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:14px;
+}
+
+.step-card{
+  min-height:180px;
+  padding:18px;
+  border:1px solid rgba(216,226,242,.9);
+  border-radius:var(--radius);
+  background:#fff;
+  box-shadow:var(--shadow);
+}
+
+.step-card span{
+  display:grid;
+  width:34px;
+  height:34px;
+  place-items:center;
+  border-radius:50%;
+  background:var(--primary);
+  color:#fff;
+  font-weight:900;
+}
+
+.step-card h3{
+  margin:16px 0 8px;
+  font-size:17px;
+}
+
+.step-card p{
+  margin:0;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.55;
+}
+
+.price-panel{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  margin-top:18px;
+  padding:22px;
+  border-radius:var(--radius);
+  background:linear-gradient(135deg,#0b5ed7,#123a75);
+  color:#fff;
+  box-shadow:var(--shadow);
+}
+
+.price-panel h2{
+  margin:10px 0 6px;
+}
+
+.price-panel p{
+  margin:0;
+  color:rgba(255,255,255,.82);
+}
+
+.price-panel strong{
+  display:grid;
+  min-width:118px;
+  min-height:78px;
+  place-items:center;
+  border-radius:var(--radius);
+  background:#fff;
+  color:var(--primary);
+  font-size:30px;
+  white-space:nowrap;
+}
+
+.profile-panel{
+  overflow:hidden;
+}
+
+.profile-hero{
+  display:flex;
+  align-items:center;
+  gap:18px;
+  margin:-24px -24px 22px;
+  padding:28px 24px;
+  background:linear-gradient(135deg,#172033,#0b5ed7);
+  color:#fff;
+}
+
+.profile-avatar-large{
+  display:grid;
+  width:76px;
+  height:76px;
+  flex:0 0 76px;
+  place-items:center;
+  border:3px solid rgba(255,255,255,.35);
+  border-radius:50%;
+  background:#fff;
+  color:var(--primary);
+  font-size:30px;
+  font-weight:900;
+}
+
+.profile-hero h2{
+  margin:10px 0 4px;
+  font-size:30px;
+}
+
+.profile-hero p{
+  margin:0;
+  color:rgba(255,255,255,.78);
+  overflow-wrap:anywhere;
+}
+
+.profile-note{
+  margin:18px 0 0;
+  padding:18px;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  background:var(--soft);
+}
+
+.profile-note h3{
+  margin:0 0 8px;
+}
+
+.profile-note p{
+  margin:0;
+  color:var(--muted);
+}
+
 .stepbar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
 
 .step{
@@ -375,11 +522,61 @@ button.success:hover{background:#236326}
 .muted{color:var(--muted)}
 a{color:var(--primary);font-weight:700}
 
+.site-footer{
+  margin-top:38px;
+  padding:46px 16px 22px;
+  background:#172033;
+  color:#fff;
+}
+
+.footer-grid{
+  max-width:1100px;
+  margin:auto;
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr;
+  gap:30px;
+}
+
+.site-footer h2,
+.site-footer h3{
+  margin:0 0 14px;
+}
+
+.site-footer p{
+  max-width:460px;
+  margin:0;
+  color:#cbd5e1;
+  line-height:1.65;
+}
+
+.site-footer a{
+  display:block;
+  margin:9px 0;
+  color:#dbeafe;
+  text-decoration:none;
+}
+
+.site-footer a:hover{
+  color:#fff;
+}
+
+.footer-bottom{
+  max-width:1100px;
+  margin:28px auto 0;
+  padding-top:18px;
+  border-top:1px solid rgba(255,255,255,.12);
+  color:#cbd5e1;
+  text-align:center;
+  font-size:13px;
+}
+
 @media(max-width:900px){
   .auth-shell{grid-template-columns:1fr;min-height:auto}
   .auth-copy{min-height:auto}
   .auth-copy h2{font-size:30px}
   .profile-grid{grid-template-columns:1fr}
+  .steps-grid{grid-template-columns:repeat(2,1fr)}
+  .footer-grid{grid-template-columns:1fr}
 }
 
 @media(max-width:800px){
@@ -397,4 +594,13 @@ a{color:var(--primary);font-weight:700}
   button{width:100%}
   .header-btn{width:auto}
   .card{padding:18px}
+  .steps-grid{grid-template-columns:1fr}
+  .price-panel{align-items:flex-start;flex-direction:column}
+  .price-panel strong{width:100%}
+  .profile-hero{
+    align-items:flex-start;
+    flex-direction:column;
+    margin:-18px -18px 20px;
+    padding:24px 18px;
+  }
 }
