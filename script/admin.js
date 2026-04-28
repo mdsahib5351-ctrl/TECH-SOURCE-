@@ -14,6 +14,10 @@ const db = firebase.firestore();
 const auth = firebase.auth();
 const ADMIN_EMAIL = "techsource@gmail.com";
 const IMGBB_API_KEY = "fa4ad05090c8cc3f9ade673a64a52235";
+const aadhaarSlotList = [
+  "10:00 AM","10:30 AM","11:00 AM","11:30 AM","12:00 PM",
+  "12:30 PM","02:00 PM","02:30 PM","03:00 PM","03:30 PM"
+];
 
 const billTable = document.getElementById("billTable");
 const tableHead = document.getElementById("tableHead");
@@ -107,7 +111,11 @@ function setFilterPlaceholders(tab) {
   const searchBill = document.getElementById("searchBill");
   const statusFilter = document.getElementById("statusFilter");
 
-  if (tab === "panlist") {
+  if (tab === "schedule") {
+    searchMobile.placeholder = "Schedule search disabled";
+    searchBill.placeholder = "Schedule search disabled";
+    statusFilter.style.display = "none";
+  } else if (tab === "panlist") {
     searchMobile.placeholder = "Search PAN name / ACK";
     searchBill.placeholder = "Search remark / gender";
     statusFilter.style.display = "";
@@ -339,7 +347,9 @@ function loadBills() {
 }
 
 function loadCurrentList() {
-  if (currentTab === "panlist") {
+  if (currentTab === "schedule") {
+    renderScheduleManager();
+  } else if (currentTab === "panlist") {
     renderPanApplications(filterPanApplications(latestPanApplications));
   } else if (currentTab === "aadhaarlist") {
     renderAadhaarApplications(filterAadhaarApplications(latestAadhaarApplications));
@@ -361,7 +371,11 @@ function switchTab(tab, btn) {
   document.querySelectorAll(".tabBtn").forEach((button) => button.classList.remove("active"));
   btn.classList.add("active");
 
-  if (tab === "panlist") {
+  if (tab === "schedule") {
+    clearActiveListener();
+    setFilterPlaceholders(tab);
+    renderScheduleManager();
+  } else if (tab === "panlist") {
     setPanHead();
     setFilterPlaceholders(tab);
     loadPanApplications();
@@ -808,6 +822,176 @@ function renderAadhaarApplications(applications) {
     `;
     billTable.appendChild(tr);
   });
+}
+
+function setScheduleHead() {
+  tableHead.innerHTML = `
+    <tr>
+      <th>Appointment Availability Manager</th>
+    </tr>
+  `;
+}
+
+function renderScheduleManager() {
+  setScheduleHead();
+  currentExportRows = [];
+
+  billTable.innerHTML = `
+    <tr>
+      <td>
+        <div class="schedule-panel">
+          <h3>Aadhaar Appointment Schedule</h3>
+          <p class="muted">Date wise holiday ya unavailable time slots set karein. Ye booking aur reschedule dono jagah apply hoga.</p>
+
+          <div class="schedule-grid">
+            <div class="schedule-field">
+              <label for="scheduleDate">Date</label>
+              <input type="date" id="scheduleDate" onchange="loadScheduleForDate()">
+            </div>
+            <div class="schedule-field">
+              <label for="scheduleNote">Admin Note</label>
+              <textarea id="scheduleNote" rows="2" placeholder="Reason, example: shop closed / lunch break / personal work"></textarea>
+            </div>
+          </div>
+
+          <label class="holiday-row">
+            <input type="checkbox" id="scheduleHoliday" onchange="toggleScheduleHoliday()">
+            Full day holiday / closed
+          </label>
+
+          <h3>Block Time Slots</h3>
+          <div class="slot-check-grid" id="scheduleSlots">
+            ${aadhaarSlotList.map((slot) => `
+              <label class="slot-check">
+                <input type="checkbox" value="${slot}">
+                ${slot}
+              </label>
+            `).join("")}
+          </div>
+
+          <div class="schedule-actions">
+            <button type="button" onclick="saveScheduleAvailability()">Save Schedule</button>
+            <button class="danger" type="button" onclick="deleteScheduleAvailability()">Delete This Date Rule</button>
+            <button type="button" onclick="loadScheduleList()">Refresh List</button>
+          </div>
+
+          <div class="schedule-list" id="scheduleList"></div>
+        </div>
+      </td>
+    </tr>
+  `;
+
+  document.getElementById("scheduleDate").value = new Date().toISOString().split("T")[0];
+  loadScheduleForDate();
+  loadScheduleList();
+}
+
+function toggleScheduleHoliday() {
+  const isHoliday = document.getElementById("scheduleHoliday").checked;
+  document.querySelectorAll("#scheduleSlots input").forEach((input) => {
+    input.disabled = isHoliday;
+    if (isHoliday) input.checked = false;
+  });
+}
+
+async function loadScheduleForDate() {
+  const date = document.getElementById("scheduleDate")?.value;
+  if (!date) return;
+
+  document.getElementById("scheduleHoliday").checked = false;
+  document.getElementById("scheduleNote").value = "";
+  document.querySelectorAll("#scheduleSlots input").forEach((input) => {
+    input.checked = false;
+    input.disabled = false;
+  });
+
+  const doc = await db.collection("aadhaarAvailability").doc(date).get().catch(() => null);
+  if (!doc || !doc.exists) return;
+
+  const data = doc.data();
+  document.getElementById("scheduleHoliday").checked = !!data.holiday;
+  document.getElementById("scheduleNote").value = data.note || "";
+  const blockedSlots = Array.isArray(data.blockedSlots) ? data.blockedSlots : [];
+
+  document.querySelectorAll("#scheduleSlots input").forEach((input) => {
+    input.checked = blockedSlots.includes(input.value);
+  });
+
+  toggleScheduleHoliday();
+}
+
+async function saveScheduleAvailability() {
+  const date = document.getElementById("scheduleDate").value;
+  const holiday = document.getElementById("scheduleHoliday").checked;
+  const note = document.getElementById("scheduleNote").value.trim();
+  const blockedSlots = holiday ? [] : Array.from(document.querySelectorAll("#scheduleSlots input:checked")).map((input) => input.value);
+
+  if (!date) {
+    alert("Date select karo");
+    return;
+  }
+
+  await db.collection("aadhaarAvailability").doc(date).set({
+    date,
+    holiday,
+    blockedSlots,
+    note,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge: true });
+
+  alert("Schedule saved");
+  loadScheduleList();
+}
+
+async function deleteScheduleAvailability() {
+  const date = document.getElementById("scheduleDate").value;
+  if (!date) return alert("Date select karo");
+  if (!confirm("Is date ka schedule rule delete karna hai?")) return;
+
+  await db.collection("aadhaarAvailability").doc(date).delete();
+  alert("Schedule rule deleted");
+  loadScheduleForDate();
+  loadScheduleList();
+}
+
+async function loadScheduleList() {
+  const list = document.getElementById("scheduleList");
+  if (!list) return;
+
+  list.innerHTML = `<div class="muted">Loading schedule...</div>`;
+
+  try {
+    const snap = await db.collection("aadhaarAvailability").orderBy("date", "asc").get();
+
+    if (snap.empty) {
+      list.innerHTML = `<div class="muted">No holiday or blocked slot rule saved yet.</div>`;
+      return;
+    }
+
+    list.innerHTML = "";
+    snap.forEach((doc) => {
+      const data = doc.data();
+      const slotsText = data.holiday ? "Full day holiday" : (data.blockedSlots || []).join(", ") || "No slot blocked";
+      const item = document.createElement("div");
+      item.className = "schedule-item";
+      item.innerHTML = `
+        <div>
+          <strong>${htmlSafe(data.date)}</strong>
+          <span>${htmlSafe(slotsText)}</span>
+          ${data.note ? `<span>Note: ${htmlSafe(data.note)}</span>` : ""}
+        </div>
+        <button class="textBtn" type="button" onclick="editScheduleDate('${htmlSafe(data.date)}')">Edit</button>
+      `;
+      list.appendChild(item);
+    });
+  } catch (error) {
+    list.innerHTML = `<div class="muted">Firebase Error: ${htmlSafe(error.message)}</div>`;
+  }
+}
+
+function editScheduleDate(date) {
+  document.getElementById("scheduleDate").value = date;
+  loadScheduleForDate();
 }
 
 function maskAadhaar(value) {
