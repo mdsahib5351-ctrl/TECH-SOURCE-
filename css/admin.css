@@ -512,6 +512,123 @@ td{
     color:#777;
 }
 
+.schedule-panel{
+    max-width:900px;
+    margin:0 auto;
+    text-align:left;
+}
+
+.schedule-panel h3{
+    margin:0 0 12px;
+    color:#222;
+}
+
+.schedule-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:14px;
+    margin-bottom:14px;
+}
+
+.schedule-field{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.schedule-field label{
+    font-weight:bold;
+    color:#333;
+}
+
+.schedule-field input,
+.schedule-field textarea{
+    padding:10px 12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:14px;
+}
+
+.holiday-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin:8px 0 14px;
+    font-weight:bold;
+}
+
+.holiday-row input{
+    width:auto;
+}
+
+.slot-check-grid{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:8px;
+    margin:10px 0 16px;
+}
+
+.slot-check{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:9px;
+    border:1px solid #d8e2f2;
+    border-radius:8px;
+    background:#f8fbff;
+    font-size:13px;
+    font-weight:bold;
+}
+
+.slot-check input{
+    width:auto;
+}
+
+.schedule-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.schedule-actions button{
+    min-height:40px;
+    padding:10px 14px;
+    background:#007bff;
+    color:#fff;
+}
+
+.schedule-actions button.danger{
+    background:#dc3545;
+}
+
+.schedule-list{
+    margin-top:18px;
+    display:grid;
+    gap:10px;
+}
+
+.schedule-item{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:12px;
+    border:1px solid #d8e2f2;
+    border-radius:10px;
+    background:#fff;
+}
+
+.schedule-item strong,
+.schedule-item span{
+    display:block;
+}
+
+.schedule-item span{
+    margin-top:4px;
+    color:#666;
+    font-size:13px;
+}
+
 @media(max-width:700px){
     body{
         padding:12px;
@@ -531,5 +648,15 @@ td{
     .tabBtn{
         padding:10px 14px;
         font-size:14px;
+    }
+
+    .schedule-grid,
+    .slot-check-grid{
+        grid-template-columns:1fr;
+    }
+
+    .schedule-item{
+        align-items:flex-start;
+        flex-direction:column;
     }
 }
