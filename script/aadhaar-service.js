@@ -177,27 +177,36 @@ async function uploadToCloudinary(file){
 
 function requireLogin(){
   if(state.currentUser) return true;
-  showAuthMode("login");
-  showMessage(els.authMessage, "Please login first.", "warn");
+  window.location.href = "login.html?next=aadhaar-service.html";
   return false;
 }
 
 function showLoggedOut(){
-  state.currentUser = null;
-  state.userProfile = {};
-  els.authPage.classList.remove("hidden");
-  els.appPage.classList.add("hidden");
-  els.profileBox.classList.add("hidden");
-  els.guestBadge.classList.remove("hidden");
+  window.location.href = "login.html?next=aadhaar-service.html";
 }
 
 async function showLoggedIn(user){
   state.currentUser = user;
   const profileSnap = await db.collection("users").doc(user.uid).get().catch(() => null);
-  state.userProfile = profileSnap && profileSnap.exists ? profileSnap.data() : {};
+  if(profileSnap && profileSnap.exists){
+    state.userProfile = profileSnap.data();
+  }else{
+    state.userProfile = {
+      name: user.displayName || user.email.split("@")[0],
+      email: user.email,
+      phone: "",
+      mobile: "",
+      city: "",
+      address: "",
+      photoUrl: user.photoURL || "",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    await db.collection("users").doc(user.uid).set(state.userProfile, { merge:true });
+  }
 
   const displayName = state.userProfile.name || user.displayName || user.email.split("@")[0];
-  const mobile = state.userProfile.mobile || "";
+  const mobile = state.userProfile.mobile || state.userProfile.phone || "";
 
   els.profileInitial.textContent = displayName.trim().charAt(0).toUpperCase() || "U";
   els.profileName.textContent = displayName;
@@ -262,6 +271,7 @@ els.registerForm.addEventListener("submit", async (event) => {
     await db.collection("users").doc(cred.user.uid).set({
       name,
       mobile,
+      phone: mobile,
       email,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
