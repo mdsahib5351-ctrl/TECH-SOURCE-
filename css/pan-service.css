@@ -427,6 +427,103 @@ select {
   line-height: 1.4;
 }
 
+.pan-steps-section {
+  margin-top: 22px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.section-head {
+  margin-bottom: 18px;
+}
+
+.section-head h2 {
+  margin: 8px 0 6px;
+  color: #12343b;
+  font-size: 26px;
+}
+
+.section-head p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.pan-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pan-step-card {
+  min-height: 172px;
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius);
+  background: var(--panel-soft);
+}
+
+.pan-step-card span {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 800;
+}
+
+.pan-step-card h3 {
+  margin: 14px 0 8px;
+  color: #12343b;
+  font-size: 16px;
+}
+
+.pan-step-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.pan-price-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 16px;
+  padding: 20px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, #12343b, #0f766e);
+  color: #fff;
+}
+
+.pan-price-panel h2 {
+  margin: 8px 0 6px;
+}
+
+.pan-price-panel p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.55;
+}
+
+.pan-price-panel strong {
+  display: grid;
+  min-width: 118px;
+  min-height: 76px;
+  place-items: center;
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--brand);
+  font-size: 28px;
+  white-space: nowrap;
+}
+
 .dashboard-footer {
   display: flex;
   width: min(1180px, calc(100% - 32px));
@@ -868,6 +965,10 @@ select:focus {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .pan-steps-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .form-footer {
     align-items: stretch;
     flex-direction: column;
@@ -891,8 +992,22 @@ select:focus {
   .quick-actions,
   .history-grid,
   .profile-grid,
+  .pan-steps-grid,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pan-steps-section {
+    padding: 16px;
+  }
+
+  .pan-price-panel {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pan-price-panel strong {
+    width: 100%;
   }
 
   .profile-summary,
