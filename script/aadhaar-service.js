@@ -1,4 +1,3 @@
-
 const firebaseConfig = {
   apiKey: "AIzaSyDZ-NvSzXJrH8YyvI5GWVWRtZnSNe0NAxU",
   authDomain: "tech-source-bill.firebaseapp.com",
@@ -11,6 +10,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
 
 const CLOUD_NAME = "dsnuatuc8";
 const UPLOAD_PRESET = "ml_default";
@@ -32,12 +32,30 @@ const maskAadhaar = (value) => value ? `XXXX XXXX ${value.slice(-4)}` : "";
 const maskMobile = (value) => value ? `${value.slice(0,2)}XXXXXX${value.slice(-2)}` : "";
 
 const state = {
+  currentUser: null,
+  userProfile: {},
   selectedService: "",
   appointmentData: {},
   submitting: false
 };
 
 const els = {
+  authPage: $("authPage"),
+  appPage: $("appPage"),
+  loginTab: $("loginTab"),
+  registerTab: $("registerTab"),
+  loginForm: $("loginForm"),
+  registerForm: $("registerForm"),
+  authMessage: $("authMessage"),
+  profileBox: $("profileBox"),
+  guestBadge: $("guestBadge"),
+  profileInitial: $("profileInitial"),
+  profileName: $("profileName"),
+  profileEmail: $("profileEmail"),
+  profilePage: $("profilePage"),
+  profilePageName: $("profilePageName"),
+  profilePageEmail: $("profilePageEmail"),
+  profilePageMobile: $("profilePageMobile"),
   homePage: $("homePage"),
   bookPage: $("bookPage"),
   trackPage: $("trackPage"),
@@ -92,7 +110,7 @@ const slotList = [
 els.appointmentDate.min = todayISO();
 els.resDate.min = todayISO();
 
-[els.mobileInput, els.aadhaarInput, els.oldMobile, els.newMobile].forEach(input => {
+[els.mobileInput, els.aadhaarInput, els.oldMobile, els.newMobile, $("registerMobile")].forEach(input => {
   input.addEventListener("input", () => {
     input.value = digitsOnly(input.value).slice(0, Number(input.maxLength) || 12);
   });
@@ -143,18 +161,120 @@ async function uploadToCloudinary(file){
   return data.secure_url;
 }
 
+function requireLogin(){
+  if(state.currentUser) return true;
+  showAuthMode("login");
+  showMessage(els.authMessage, "Please login first.", "warn");
+  return false;
+}
+
+function showLoggedOut(){
+  state.currentUser = null;
+  state.userProfile = {};
+  els.authPage.classList.remove("hidden");
+  els.appPage.classList.add("hidden");
+  els.profileBox.classList.add("hidden");
+  els.guestBadge.classList.remove("hidden");
+}
+
+async function showLoggedIn(user){
+  state.currentUser = user;
+  const profileSnap = await db.collection("users").doc(user.uid).get().catch(() => null);
+  state.userProfile = profileSnap && profileSnap.exists ? profileSnap.data() : {};
+
+  const displayName = state.userProfile.name || user.displayName || user.email.split("@")[0];
+  const mobile = state.userProfile.mobile || "";
+
+  els.profileInitial.textContent = displayName.trim().charAt(0).toUpperCase() || "U";
+  els.profileName.textContent = displayName;
+  els.profileEmail.textContent = user.email;
+  els.profilePageName.textContent = displayName;
+  els.profilePageEmail.textContent = user.email;
+  els.profilePageMobile.textContent = mobile || "-";
+  els.nameInput.value = displayName;
+  els.mobileInput.value = mobile;
+
+  els.authPage.classList.add("hidden");
+  els.appPage.classList.remove("hidden");
+  els.profileBox.classList.remove("hidden");
+  els.guestBadge.classList.add("hidden");
+  goHome();
+}
+
+window.showAuthMode = function(mode){
+  const isLogin = mode === "login";
+  els.loginTab.classList.toggle("active", isLogin);
+  els.registerTab.classList.toggle("active", !isLogin);
+  els.loginForm.classList.toggle("hidden", !isLogin);
+  els.registerForm.classList.toggle("hidden", isLogin);
+  els.authMessage.innerHTML = "";
+};
+
+els.loginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+
+  if(!email || !password) return showMessage(els.authMessage, "Email aur password enter karo", "warn");
+
+  try{
+    showMessage(els.authMessage, "Logging in...", "warn");
+    await auth.signInWithEmailAndPassword(email, password);
+    els.loginForm.reset();
+  }catch(error){
+    showMessage(els.authMessage, error.message, "error");
+  }
+});
+
+els.registerForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const name = $("registerName").value.trim();
+  const mobile = $("registerMobile").value.trim();
+  const email = $("registerEmail").value.trim();
+  const password = $("registerPassword").value;
+
+  if(name.length < 3) return showMessage(els.authMessage, "Valid full name enter karo", "warn");
+  if(!isTenDigitMobile(mobile)) return showMessage(els.authMessage, "Valid 10 digit mobile enter karo", "warn");
+  if(!email) return showMessage(els.authMessage, "Email enter karo", "warn");
+  if(password.length < 6) return showMessage(els.authMessage, "Password minimum 6 characters ka hona chahiye", "warn");
+
+  try{
+    showMessage(els.authMessage, "Creating account...", "warn");
+    const cred = await auth.createUserWithEmailAndPassword(email, password);
+    await cred.user.updateProfile({ displayName:name });
+    await db.collection("users").doc(cred.user.uid).set({
+      name,
+      mobile,
+      email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    els.registerForm.reset();
+  }catch(error){
+    showMessage(els.authMessage, error.message, "error");
+  }
+});
+
+window.logoutUser = async function(){
+  await auth.signOut();
+};
+
+window.openProfile = function(){
+  if(!requireLogin()) return;
+  hideAll();
+  els.profilePage.classList.remove("hidden");
+};
+
+auth.onAuthStateChanged((user) => {
+  if(user) showLoggedIn(user);
+  else showLoggedOut();
+});
+
 function getServiceExtraData(){
   if(state.selectedService === "Address Without Documents"){
     if(!els.newAddress.value.trim()) return { error:"New address enter karo" };
     return {
-      data:{
-        newAddress: els.newAddress.value.trim(),
-        note: els.withoutDocNote.value.trim()
-      },
-      rows:[
-        ["New Address", els.newAddress.value.trim()],
-        ["Note", els.withoutDocNote.value.trim() || "-"]
-      ]
+      data:{ newAddress: els.newAddress.value.trim(), note: els.withoutDocNote.value.trim() },
+      rows:[["New Address", els.newAddress.value.trim()], ["Note", els.withoutDocNote.value.trim() || "-"]]
     };
   }
 
@@ -162,16 +282,8 @@ function getServiceExtraData(){
     if(!els.relationType.value) return { error:"Relation select karo" };
     if(!els.coName.value.trim()) return { error:"C/O name enter karo" };
     return {
-      data:{
-        relationType: els.relationType.value,
-        coName: els.coName.value.trim(),
-        coAddress: els.coAddress.value.trim()
-      },
-      rows:[
-        ["Relation", els.relationType.value],
-        ["C/O Name", els.coName.value.trim()],
-        ["Address", els.coAddress.value.trim() || "-"]
-      ]
+      data:{ relationType: els.relationType.value, coName: els.coName.value.trim(), coAddress: els.coAddress.value.trim() },
+      rows:[["Relation", els.relationType.value], ["C/O Name", els.coName.value.trim()], ["Address", els.coAddress.value.trim() || "-"]]
     };
   }
 
@@ -180,14 +292,8 @@ function getServiceExtraData(){
     if(!isTenDigitMobile(els.newMobile.value.trim())) return { error:"New mobile valid enter karo" };
     if(els.oldMobile.value.trim() === els.newMobile.value.trim()) return { error:"New mobile old mobile se different hona chahiye" };
     return {
-      data:{
-        oldMobile: els.oldMobile.value.trim(),
-        newMobile: els.newMobile.value.trim()
-      },
-      rows:[
-        ["Old Mobile", maskMobile(els.oldMobile.value.trim())],
-        ["New Mobile", maskMobile(els.newMobile.value.trim())]
-      ]
+      data:{ oldMobile: els.oldMobile.value.trim(), newMobile: els.newMobile.value.trim() },
+      rows:[["Old Mobile", maskMobile(els.oldMobile.value.trim())], ["New Mobile", maskMobile(els.newMobile.value.trim())]]
     };
   }
 
@@ -197,16 +303,8 @@ function getServiceExtraData(){
   if(!els.docAddress.value.trim()) return { error:"New address enter karo" };
 
   return {
-    data:{
-      docType: els.docType.value,
-      fileName: els.documentFile.files[0].name,
-      docAddress: els.docAddress.value.trim()
-    },
-    rows:[
-      ["Document Type", els.docType.value],
-      ["Uploaded File", els.documentFile.files[0].name],
-      ["New Address", els.docAddress.value.trim()]
-    ]
+    data:{ docType: els.docType.value, fileName: els.documentFile.files[0].name, docAddress: els.docAddress.value.trim() },
+    rows:[["Document Type", els.docType.value], ["Uploaded File", els.documentFile.files[0].name], ["New Address", els.docAddress.value.trim()]]
   };
 }
 
@@ -269,9 +367,11 @@ function resetBookingForm(){
   state.selectedService = "";
   state.appointmentData = {};
   [
-    els.nameInput,els.mobileInput,els.aadhaarInput,els.newAddress,els.withoutDocNote,
-    els.coName,els.coAddress,els.oldMobile,els.newMobile,els.docAddress
+    els.aadhaarInput,els.newAddress,els.withoutDocNote,els.coName,els.coAddress,
+    els.oldMobile,els.newMobile,els.docAddress
   ].forEach(input => input.value = "");
+  els.nameInput.value = state.userProfile.name || state.currentUser?.displayName || "";
+  els.mobileInput.value = state.userProfile.mobile || "";
   els.relationType.value = "";
   els.docType.value = "";
   els.documentFile.value = "";
@@ -298,17 +398,20 @@ window.handleServiceKey = function(event, el, service){
 
 window.hideAll = function(){
   els.homePage.classList.add("hidden");
+  els.profilePage.classList.add("hidden");
   els.bookPage.classList.add("hidden");
   els.trackPage.classList.add("hidden");
   els.reschedulePage.classList.add("hidden");
 };
 
 window.goHome = function(){
+  if(!requireLogin()) return;
   hideAll();
   els.homePage.classList.remove("hidden");
 };
 
 window.openBook = function(){
+  if(!requireLogin()) return;
   hideAll();
   resetBookingForm();
   els.bookPage.classList.remove("hidden");
@@ -316,12 +419,14 @@ window.openBook = function(){
 };
 
 window.openTrack = function(){
+  if(!requireLogin()) return;
   hideAll();
   els.trackResult.innerHTML = "";
   els.trackPage.classList.remove("hidden");
 };
 
 window.openReschedule = function(){
+  if(!requireLogin()) return;
   hideAll();
   els.resResult.innerHTML = "";
   els.resTime.value = "";
@@ -333,28 +438,10 @@ window.showOnlyStep = function(n){
   [els.step1, els.step2, els.step3, els.step4].forEach(step => step.classList.add("hidden"));
   [els.s1, els.s2, els.s3, els.s4].forEach(step => step.className = "step");
 
-  if(n === 1){
-    els.step1.classList.remove("hidden");
-    els.s1.classList.add("active");
-  }
-  if(n === 2){
-    els.step2.classList.remove("hidden");
-    els.s1.classList.add("done");
-    els.s2.classList.add("active");
-  }
-  if(n === 3){
-    els.step3.classList.remove("hidden");
-    els.s1.classList.add("done");
-    els.s2.classList.add("done");
-    els.s3.classList.add("active");
-  }
-  if(n === 4){
-    els.step4.classList.remove("hidden");
-    els.s1.classList.add("done");
-    els.s2.classList.add("done");
-    els.s3.classList.add("done");
-    els.s4.classList.add("active");
-  }
+  if(n === 1){ els.step1.classList.remove("hidden"); els.s1.classList.add("active"); }
+  if(n === 2){ els.step2.classList.remove("hidden"); els.s1.classList.add("done"); els.s2.classList.add("active"); }
+  if(n === 3){ els.step3.classList.remove("hidden"); els.s1.classList.add("done"); els.s2.classList.add("done"); els.s3.classList.add("active"); }
+  if(n === 4){ els.step4.classList.remove("hidden"); els.s1.classList.add("done"); els.s2.classList.add("done"); els.s3.classList.add("done"); els.s4.classList.add("active"); }
 };
 
 window.showServices = function(){
@@ -385,18 +472,12 @@ window.goStep2 = function(){
   if(!state.selectedService) return alert("Service select karo");
 
   els.selectedServiceText.textContent = state.selectedService;
-
   [els.withoutDocSection, els.coSection, els.mobileUpdateSection, els.docSection].forEach(section => section.classList.add("hidden"));
 
-  if(state.selectedService === "Address Without Documents"){
-    els.withoutDocSection.classList.remove("hidden");
-  }else if(state.selectedService === "C/O Update"){
-    els.coSection.classList.remove("hidden");
-  }else if(state.selectedService === "Mobile Number Update"){
-    els.mobileUpdateSection.classList.remove("hidden");
-  }else{
-    els.docSection.classList.remove("hidden");
-  }
+  if(state.selectedService === "Address Without Documents") els.withoutDocSection.classList.remove("hidden");
+  else if(state.selectedService === "C/O Update") els.coSection.classList.remove("hidden");
+  else if(state.selectedService === "Mobile Number Update") els.mobileUpdateSection.classList.remove("hidden");
+  else els.docSection.classList.remove("hidden");
 
   showOnlyStep(2);
 };
@@ -414,6 +495,8 @@ window.goReview = function(){
 
   state.appointmentData = {
     appointmentId: generateAppointmentId(),
+    userId: state.currentUser.uid,
+    userEmail: state.currentUser.email,
     name: els.nameInput.value.trim(),
     mobile: els.mobileInput.value.trim(),
     aadhaar: els.aadhaarInput.value.trim(),
@@ -441,7 +524,7 @@ window.goReview = function(){
 };
 
 window.submitAppointment = async function(){
-  if(state.submitting) return;
+  if(state.submitting || !requireLogin()) return;
 
   try{
     state.submitting = true;
@@ -487,10 +570,7 @@ window.downloadPDF = function(){
     const lines = pdf.splitTextToSize(text, 170);
     pdf.text(lines, 20, y);
     y += lines.length * 7 + 2;
-    if(y > 275){
-      pdf.addPage();
-      y = 20;
-    }
+    if(y > 275){ pdf.addPage(); y = 20; }
   };
 
   pdf.setFontSize(16);
@@ -529,15 +609,19 @@ window.downloadPDF = function(){
 
 window.trackAppointment = async function(){
   try{
+    if(!requireLogin()) return;
     const id = els.trackId.value.trim().toUpperCase();
     if(!id) return showMessage(els.trackResult, "Appointment ID enter karo", "warn");
 
     showMessage(els.trackResult, "Loading...", "warn");
 
-    const snap = await db.collection("appointments").where("appointmentId", "==", id).get();
+    const snap = await db.collection("appointments")
+      .where("appointmentId", "==", id)
+      .where("userId", "==", state.currentUser.uid)
+      .get();
 
     if(snap.empty){
-      showMessage(els.trackResult, "Appointment not found", "error");
+      showMessage(els.trackResult, "Appointment not found for this login", "error");
       return;
     }
 
@@ -577,6 +661,7 @@ window.trackAppointment = async function(){
 
 window.rescheduleAppointment = async function(){
   try{
+    if(!requireLogin()) return;
     const id = els.resId.value.trim().toUpperCase();
     if(!id) return alert("Appointment ID enter karo");
     if(!els.resDate.value) return alert("New date select karo");
@@ -585,10 +670,13 @@ window.rescheduleAppointment = async function(){
 
     showMessage(els.resResult, "Loading...", "warn");
 
-    const snap = await db.collection("appointments").where("appointmentId", "==", id).get();
+    const snap = await db.collection("appointments")
+      .where("appointmentId", "==", id)
+      .where("userId", "==", state.currentUser.uid)
+      .get();
 
     if(snap.empty){
-      showMessage(els.resResult, "Appointment not found", "error");
+      showMessage(els.resResult, "Appointment not found for this login", "error");
       return;
     }
 
