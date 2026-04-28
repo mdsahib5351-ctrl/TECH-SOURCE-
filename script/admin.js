@@ -33,6 +33,8 @@ const panApprovedCountEl = document.getElementById("panApprovedCount");
 const aadhaarPendingCountEl = document.getElementById("aadhaarPendingCount");
 const aadhaarApprovedCountEl = document.getElementById("aadhaarApprovedCount");
 const todayAadhaarCountEl = document.getElementById("todayAadhaarCount");
+const panNotifyBadge = document.getElementById("panNotifyBadge");
+const aadhaarNotifyBadge = document.getElementById("aadhaarNotifyBadge");
 
 let editDocId = null;
 let currentPanId = null;
@@ -44,6 +46,7 @@ let latestBills = [];
 let latestPanApplications = [];
 let latestAadhaarApplications = [];
 let currentExportRows = [];
+let scheduleCalendarDate = new Date();
 
 firebase.auth().onAuthStateChanged((user) => {
   if (!user) {
@@ -143,6 +146,14 @@ function setApplicationStats() {
   aadhaarPendingCountEl.textContent = aadhaarPending;
   aadhaarApprovedCountEl.textContent = aadhaarApproved;
   todayAadhaarCountEl.textContent = todayAadhaar;
+  updateNotificationBadge(panNotifyBadge, panPending);
+  updateNotificationBadge(aadhaarNotifyBadge, aadhaarPending);
+}
+
+function updateNotificationBadge(element, count) {
+  if (!element) return;
+  element.textContent = count > 99 ? "99+" : count;
+  element.classList.toggle("show", count > 0);
 }
 
 function loadDashboardApplicationCounts() {
@@ -814,10 +825,10 @@ function renderAadhaarApplications(applications) {
         ${d.documentUrl ? `<button class="docBtn" type="button" onclick="window.open('${d.documentUrl}', '_blank')">View</button>` : `<span style="color:red;">No File</span>`}
       </td>
       <td class="button-group">
-        <button class="viewBtn" type="button" onclick="openAadhaarView('${d.id}')"></button>
-        <button class="statusBtn" type="button" onclick="openAadhaarStatusModal('${d.id}')">Status</button>
-        <button class="whatsappBtn" type="button" onclick="sendAadhaarWhatsApp('${d.id}')"></button>
-        <button class="deleteBtn" type="button" onclick="deleteAadhaar('${d.id}')"></button>
+        <button class="aadhaarActionBtn view" type="button" onclick="openAadhaarView('${d.id}')">View</button>
+        <button class="aadhaarActionBtn status" type="button" onclick="openAadhaarStatusModal('${d.id}')">Status</button>
+        <button class="aadhaarActionBtn remind" type="button" onclick="sendAadhaarWhatsApp('${d.id}')">Remind</button>
+        <button class="aadhaarActionBtn delete" type="button" onclick="deleteAadhaar('${d.id}')">Delete</button>
       </td>
     `;
     billTable.appendChild(tr);
@@ -842,6 +853,20 @@ function renderScheduleManager() {
         <div class="schedule-panel">
           <h3>Aadhaar Appointment Schedule</h3>
           <p class="muted">Date wise holiday ya unavailable time slots set karein. Ye booking aur reschedule dono jagah apply hoga.</p>
+
+          <div class="calendar-card">
+            <div class="calendar-head">
+              <button type="button" onclick="changeScheduleMonth(-1)">Prev</button>
+              <h3 id="scheduleMonthTitle">Month</h3>
+              <button type="button" onclick="changeScheduleMonth(1)">Next</button>
+            </div>
+            <div class="calendar-legend">
+              <span><i class="legend-dot available"></i> Available</span>
+              <span><i class="legend-dot holiday"></i> Holiday</span>
+              <span><i class="legend-dot partial"></i> Partial Blocked</span>
+            </div>
+            <div class="calendar-grid" id="scheduleCalendar"></div>
+          </div>
 
           <div class="schedule-grid">
             <div class="schedule-field">
@@ -883,6 +908,7 @@ function renderScheduleManager() {
 
   document.getElementById("scheduleDate").value = new Date().toISOString().split("T")[0];
   loadScheduleForDate();
+  renderScheduleCalendar();
   loadScheduleList();
 }
 
@@ -892,6 +918,87 @@ function toggleScheduleHoliday() {
     input.disabled = isHoliday;
     if (isHoliday) input.checked = false;
   });
+}
+
+function dateToISO(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+async function getScheduleRulesForMonth(monthDate) {
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+  const start = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+  const endDate = new Date(year, month + 1, 0);
+  const end = dateToISO(endDate);
+  const snap = await db.collection("aadhaarAvailability")
+    .where("date", ">=", start)
+    .where("date", "<=", end)
+    .get();
+  const map = new Map();
+  snap.forEach((doc) => map.set(doc.id, doc.data()));
+  return map;
+}
+
+async function renderScheduleCalendar() {
+  const calendar = document.getElementById("scheduleCalendar");
+  const title = document.getElementById("scheduleMonthTitle");
+  if (!calendar || !title) return;
+
+  const year = scheduleCalendarDate.getFullYear();
+  const month = scheduleCalendarDate.getMonth();
+  const monthName = scheduleCalendarDate.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+  title.textContent = monthName;
+  calendar.innerHTML = `<div class="muted" style="grid-column:1/-1;">Loading calendar...</div>`;
+
+  try {
+    const rules = await getScheduleRulesForMonth(scheduleCalendarDate);
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const selectedDate = document.getElementById("scheduleDate")?.value || "";
+    const today = dateToISO(new Date());
+    const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    let html = weekDays.map((day) => `<div class="calendar-weekday">${day}</div>`).join("");
+
+    for (let i = 0; i < firstDay.getDay(); i++) {
+      html += `<div class="calendar-empty"></div>`;
+    }
+
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      const date = dateToISO(new Date(year, month, day));
+      const rule = rules.get(date);
+      let status = "available";
+      let label = "Available";
+
+      if (rule?.holiday) {
+        status = "holiday";
+        label = "Holiday";
+      } else if (Array.isArray(rule?.blockedSlots) && rule.blockedSlots.length) {
+        status = "partial";
+        label = `${rule.blockedSlots.length} blocked`;
+      }
+
+      const active = selectedDate === date ? " selected" : "";
+      const isToday = today === date ? " today" : "";
+      html += `
+        <button class="calendar-day ${status}${active}${isToday}" type="button" onclick="editScheduleDate('${date}')">
+          <strong>${day}</strong>
+          <span>${label}</span>
+        </button>
+      `;
+    }
+
+    calendar.innerHTML = html;
+  } catch (error) {
+    calendar.innerHTML = `<div class="muted" style="grid-column:1/-1;">Calendar load error: ${htmlSafe(error.message)}</div>`;
+  }
+}
+
+function changeScheduleMonth(delta) {
+  scheduleCalendarDate = new Date(scheduleCalendarDate.getFullYear(), scheduleCalendarDate.getMonth() + delta, 1);
+  renderScheduleCalendar();
 }
 
 async function loadScheduleForDate() {
@@ -940,6 +1047,7 @@ async function saveScheduleAvailability() {
   }, { merge: true });
 
   alert("Schedule saved");
+  renderScheduleCalendar();
   loadScheduleList();
 }
 
@@ -951,6 +1059,7 @@ async function deleteScheduleAvailability() {
   await db.collection("aadhaarAvailability").doc(date).delete();
   alert("Schedule rule deleted");
   loadScheduleForDate();
+  renderScheduleCalendar();
   loadScheduleList();
 }
 
@@ -991,7 +1100,9 @@ async function loadScheduleList() {
 
 function editScheduleDate(date) {
   document.getElementById("scheduleDate").value = date;
+  scheduleCalendarDate = new Date(date + "T00:00:00");
   loadScheduleForDate();
+  renderScheduleCalendar();
 }
 
 function maskAadhaar(value) {
