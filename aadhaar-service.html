@@ -3,205 +3,285 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aadhaar Firebase Portal</title>
-
+<title>Aadhaar Service Portal | Tech Source</title>
+<link rel="icon" href="https://i.ibb.co/TBzgsbMS/TS-logo-with-vibrant-gradients.jpg" type="image/jpeg">
+<link rel="stylesheet" href="css/aadhaar-service.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <link rel="stylesheet" href="css/aadhaar-service.css">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 </head>
 
 <body>
 <header>
   <div class="header-inner">
-    <div>
+    <div class="brand-block">
       <h1>Aadhaar Service Portal</h1>
       <div class="header-sub">Book, track and reschedule appointments</div>
     </div>
-    <span class="badge" style="background:#fff;color:#0b5ed7;">Tech Source</span>
+
+    <div id="profileBox" class="profile-box hidden">
+      <div class="avatar" id="profileInitial">U</div>
+      <div class="profile-meta">
+        <strong id="profileName">User</strong>
+        <span id="profileEmail">user@example.com</span>
+      </div>
+      <button class="header-btn" type="button" onclick="openProfile()">Profile</button>
+      <button class="header-btn logout" type="button" onclick="logoutUser()">Logout</button>
+    </div>
+
+    <span id="guestBadge" class="badge light">Tech Source</span>
   </div>
 </header>
 
 <main>
-  <div id="homePage" class="container">
-    <div class="home-grid">
-      <div class="card home-card" role="button" tabindex="0" onclick="openBook()" onkeydown="handleCardKey(event, openBook)">
-        <h2>📅</h2><h3>Book Appointment</h3><p>New Aadhaar update appointment</p>
-      </div>
-      <div class="card home-card" role="button" tabindex="0" onclick="openTrack()" onkeydown="handleCardKey(event, openTrack)">
-        <h2>🔍</h2><h3>Track Appointment</h3><p>Check appointment status</p>
-      </div>
-      <div class="card home-card" role="button" tabindex="0" onclick="openReschedule()" onkeydown="handleCardKey(event, openReschedule)">
-        <h2>🔄</h2><h3>Reschedule Appointment</h3><p>Change appointment date/time</p>
-      </div>
-    </div>
-  </div>
-
-  <div id="bookPage" class="container hidden">
-    <div class="stepbar" aria-label="Appointment progress">
-      <div id="s1" class="step active">1. Personal Details</div>
-      <div id="s2" class="step">2. Service Details</div>
-      <div id="s3" class="step">3. Review</div>
-      <div id="s4" class="step">4. Submit / PDF</div>
-    </div>
-
-    <section id="step1" class="card">
-      <h3>Personal Details</h3>
-
-      <label for="name">Full Name</label>
-      <input id="name" autocomplete="name" placeholder="Enter full name">
-
-      <label for="mobile">Mobile Number</label>
-      <input id="mobile" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="Enter 10 digit mobile number">
-
-      <label for="aadhaar">Aadhaar Number</label>
-      <input id="aadhaar" inputmode="numeric" maxlength="12" placeholder="Enter 12 digit Aadhaar number" oninput="showServices()">
-      <p class="hint">Service options will appear after a valid 12 digit Aadhaar number.</p>
-
-      <div id="serviceOptions" class="options hidden" aria-label="Service options">
-        <div class="opt" role="button" tabindex="0" onclick="selectService(this,'Address With Documents')" onkeydown="handleServiceKey(event,this,'Address With Documents')">Address With Documents</div>
-        <div class="opt" role="button" tabindex="0" onclick="selectService(this,'Address Without Documents')" onkeydown="handleServiceKey(event,this,'Address Without Documents')">Address Without Documents</div>
-        <div class="opt" role="button" tabindex="0" onclick="selectService(this,'C/O Update')" onkeydown="handleServiceKey(event,this,'C/O Update')">C/O Update</div>
-        <div class="opt" role="button" tabindex="0" onclick="selectService(this,'Mobile Number Update')" onkeydown="handleServiceKey(event,this,'Mobile Number Update')">Mobile Number Update</div>
+  <div id="authPage" class="container">
+    <section class="auth-shell">
+      <div class="auth-copy">
+        <span class="badge">Secure Access</span>
+        <h2>Login to manage Aadhaar appointments.</h2>
+        <p>Create a new account, then book appointments, track status and manage reschedules from one place.</p>
       </div>
 
-      <div class="btn-row">
-        <button class="secondary" type="button" onclick="goHome()">Back</button>
-        <button type="button" onclick="goStep2()">Next</button>
+      <div class="card auth-card">
+        <div class="auth-tabs">
+          <button id="loginTab" class="tab active" type="button" onclick="showAuthMode('login')">Login</button>
+          <button id="registerTab" class="tab" type="button" onclick="showAuthMode('register')">Register</button>
+        </div>
+
+        <form id="loginForm" class="auth-form">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" type="email" autocomplete="email" placeholder="Enter email">
+
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter password">
+
+          <button class="full" type="submit">Login</button>
+        </form>
+
+        <form id="registerForm" class="auth-form hidden">
+          <label for="registerName">Full Name</label>
+          <input id="registerName" autocomplete="name" placeholder="Enter full name">
+
+          <label for="registerMobile">Mobile Number</label>
+          <input id="registerMobile" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="Enter 10 digit mobile number">
+
+          <label for="registerEmail">Email</label>
+          <input id="registerEmail" type="email" autocomplete="email" placeholder="Enter email">
+
+          <label for="registerPassword">Password</label>
+          <input id="registerPassword" type="password" autocomplete="new-password" placeholder="Minimum 6 characters">
+
+          <button class="full success" type="submit">Create Account</button>
+        </form>
+
+        <div id="authMessage"></div>
       </div>
     </section>
+  </div>
 
-    <section id="step2" class="card hidden">
-      <h3>Service Details</h3>
-      <p>Selected Service: <span id="selectedServiceText" class="badge"></span></p>
+  <div id="appPage" class="hidden">
+    <div id="homePage" class="container">
+      <div class="home-grid">
+        <div class="card home-card" role="button" tabindex="0" onclick="openBook()" onkeydown="handleCardKey(event, openBook)">
+          <h2>Book</h2><h3>Book Appointment</h3><p>New Aadhaar update appointment</p>
+        </div>
+        <div class="card home-card" role="button" tabindex="0" onclick="openTrack()" onkeydown="handleCardKey(event, openTrack)">
+          <h2>Track</h2><h3>Track Appointment</h3><p>Check appointment status</p>
+        </div>
+        <div class="card home-card" role="button" tabindex="0" onclick="openReschedule()" onkeydown="handleCardKey(event, openReschedule)">
+          <h2>Change</h2><h3>Reschedule Appointment</h3><p>Change appointment date/time</p>
+        </div>
+      </div>
+    </div>
 
-      <div id="withoutDocSection" class="hidden">
-        <label for="newAddress">New Address</label>
-        <textarea id="newAddress" rows="3" placeholder="Enter new address"></textarea>
+    <div id="profilePage" class="container hidden">
+      <section class="card">
+        <h3>Profile</h3>
+        <div class="profile-grid">
+          <div class="profile-stat">
+            <span>Name</span>
+            <b id="profilePageName">-</b>
+          </div>
+          <div class="profile-stat">
+            <span>Email</span>
+            <b id="profilePageEmail">-</b>
+          </div>
+          <div class="profile-stat">
+            <span>Mobile</span>
+            <b id="profilePageMobile">-</b>
+          </div>
+        </div>
+        <button class="secondary full" type="button" onclick="goHome()">Back Home</button>
+      </section>
+    </div>
 
-        <label for="withoutDocNote">Reason / Note</label>
-        <textarea id="withoutDocNote" rows="2" placeholder="Enter note"></textarea>
+    <div id="bookPage" class="container hidden">
+      <div class="stepbar" aria-label="Appointment progress">
+        <div id="s1" class="step active">1. Personal Details</div>
+        <div id="s2" class="step">2. Service Details</div>
+        <div id="s3" class="step">3. Review</div>
+        <div id="s4" class="step">4. Submit / PDF</div>
       </div>
 
-      <div id="coSection" class="hidden">
-        <label for="relationType">Relation Type</label>
-        <select id="relationType">
-          <option value="">Select relation</option>
-          <option>Father</option>
-          <option>Mother</option>
-          <option>Spouse</option>
-          <option>Guardian</option>
-        </select>
+      <section id="step1" class="card">
+        <h3>Personal Details</h3>
 
-        <label for="coName">C/O Name</label>
-        <input id="coName" placeholder="Enter C/O name">
+        <label for="name">Full Name</label>
+        <input id="name" autocomplete="name" placeholder="Enter full name">
 
-        <label for="coAddress">Address</label>
-        <textarea id="coAddress" rows="3" placeholder="Enter address"></textarea>
-      </div>
+        <label for="mobile">Mobile Number</label>
+        <input id="mobile" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="Enter 10 digit mobile number">
 
-      <div id="mobileUpdateSection" class="hidden">
-        <label for="oldMobile">Old Mobile Number</label>
-        <input id="oldMobile" inputmode="numeric" maxlength="10" placeholder="Enter old mobile number">
+        <label for="aadhaar">Aadhaar Number</label>
+        <input id="aadhaar" inputmode="numeric" maxlength="12" placeholder="Enter 12 digit Aadhaar number" oninput="showServices()">
+        <p class="hint">Service options will appear after a valid 12 digit Aadhaar number.</p>
 
-        <label for="newMobile">New Mobile Number</label>
-        <input id="newMobile" inputmode="numeric" maxlength="10" placeholder="Enter new mobile number">
-      </div>
+        <div id="serviceOptions" class="options hidden" aria-label="Service options">
+          <div class="opt" role="button" tabindex="0" onclick="selectService(this,'Address With Documents')" onkeydown="handleServiceKey(event,this,'Address With Documents')">Address With Documents</div>
+          <div class="opt" role="button" tabindex="0" onclick="selectService(this,'Address Without Documents')" onkeydown="handleServiceKey(event,this,'Address Without Documents')">Address Without Documents</div>
+          <div class="opt" role="button" tabindex="0" onclick="selectService(this,'C/O Update')" onkeydown="handleServiceKey(event,this,'C/O Update')">C/O Update</div>
+          <div class="opt" role="button" tabindex="0" onclick="selectService(this,'Mobile Number Update')" onkeydown="handleServiceKey(event,this,'Mobile Number Update')">Mobile Number Update</div>
+        </div>
 
-      <div id="docSection" class="hidden">
-        <label for="docType">Document Type</label>
-        <select id="docType">
-          <option value="">Select document type</option>
-          <option>Electricity Bill</option>
-          <option>Bank Passbook</option>
-          <option>Voter ID</option>
-          <option>Passport</option>
-          <option>Ration Card</option>
-          <option>Other</option>
-        </select>
+        <div class="btn-row">
+          <button class="secondary" type="button" onclick="goHome()">Back</button>
+          <button type="button" onclick="goStep2()">Next</button>
+        </div>
+      </section>
 
-        <label for="documentFile">Upload Document</label>
-        <input type="file" id="documentFile" accept="image/*,.pdf">
-        <p class="hint">PDF or image only, maximum 10 MB.</p>
+      <section id="step2" class="card hidden">
+        <h3>Service Details</h3>
+        <p>Selected Service: <span id="selectedServiceText" class="badge"></span></p>
 
-        <label for="docAddress">New Address</label>
-        <textarea id="docAddress" rows="3" placeholder="Enter new address"></textarea>
-      </div>
+        <div id="withoutDocSection" class="hidden">
+          <label for="newAddress">New Address</label>
+          <textarea id="newAddress" rows="3" placeholder="Enter new address"></textarea>
 
-      <div class="date-time-box">
-        <h3>Choose Appointment Date & Time</h3>
+          <label for="withoutDocNote">Reason / Note</label>
+          <textarea id="withoutDocNote" rows="2" placeholder="Enter note"></textarea>
+        </div>
 
-        <label for="appointmentDate">Appointment Date</label>
-        <input type="date" id="appointmentDate" onchange="renderTimeSlots()">
+        <div id="coSection" class="hidden">
+          <label for="relationType">Relation Type</label>
+          <select id="relationType">
+            <option value="">Select relation</option>
+            <option>Father</option>
+            <option>Mother</option>
+            <option>Spouse</option>
+            <option>Guardian</option>
+          </select>
 
-        <label>Available Time Slots</label>
-        <input type="hidden" id="appointmentTime">
+          <label for="coName">C/O Name</label>
+          <input id="coName" placeholder="Enter C/O name">
 
-        <div id="timeSlots" class="time-slots">
+          <label for="coAddress">Address</label>
+          <textarea id="coAddress" rows="3" placeholder="Enter address"></textarea>
+        </div>
+
+        <div id="mobileUpdateSection" class="hidden">
+          <label for="oldMobile">Old Mobile Number</label>
+          <input id="oldMobile" inputmode="numeric" maxlength="10" placeholder="Enter old mobile number">
+
+          <label for="newMobile">New Mobile Number</label>
+          <input id="newMobile" inputmode="numeric" maxlength="10" placeholder="Enter new mobile number">
+        </div>
+
+        <div id="docSection" class="hidden">
+          <label for="docType">Document Type</label>
+          <select id="docType">
+            <option value="">Select document type</option>
+            <option>Electricity Bill</option>
+            <option>Bank Passbook</option>
+            <option>Voter ID</option>
+            <option>Passport</option>
+            <option>Ration Card</option>
+            <option>Other</option>
+          </select>
+
+          <label for="documentFile">Upload Document</label>
+          <input type="file" id="documentFile" accept="image/*,.pdf">
+          <p class="hint">PDF or image only, maximum 10 MB.</p>
+
+          <label for="docAddress">New Address</label>
+          <textarea id="docAddress" rows="3" placeholder="Enter new address"></textarea>
+        </div>
+
+        <div class="date-time-box">
+          <h3>Choose Appointment Date & Time</h3>
+
+          <label for="appointmentDate">Appointment Date</label>
+          <input type="date" id="appointmentDate" onchange="renderTimeSlots()">
+
+          <label>Available Time Slots</label>
+          <input type="hidden" id="appointmentTime">
+
+          <div id="timeSlots" class="time-slots">
+            <p style="grid-column:1/-1;color:#777;">Please select date first</p>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="secondary" type="button" onclick="backStep1()">Back</button>
+          <button type="button" onclick="goReview()">Review</button>
+        </div>
+      </section>
+
+      <section id="step3" class="card hidden">
+        <h3>Review Appointment</h3>
+        <div id="reviewBox" class="review-box"></div>
+
+        <div class="btn-row">
+          <button class="secondary" type="button" onclick="backStep2()">Back</button>
+          <button id="submitBtn" class="success" type="button" onclick="submitAppointment()">Submit & Download PDF</button>
+        </div>
+      </section>
+
+      <section id="step4" class="card hidden">
+        <div class="success-box">
+          <h2>Appointment Submitted</h2>
+          <p>Your Appointment ID:</p>
+          <h2 id="finalId"></h2>
+          <div class="inline-actions">
+            <button type="button" onclick="downloadPDF()">Download PDF Again</button>
+            <button class="secondary" type="button" onclick="goHome()">Go Home</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div id="trackPage" class="container hidden">
+      <section class="card">
+        <h3>Track Appointment</h3>
+        <label for="trackId">Appointment ID</label>
+        <input id="trackId" placeholder="Enter Appointment ID, example TS-123456">
+        <button class="full" type="button" onclick="trackAppointment()">Search</button>
+        <div id="trackResult" style="margin-top:20px;"></div>
+        <button class="secondary full" type="button" onclick="goHome()">Back Home</button>
+      </section>
+    </div>
+
+    <div id="reschedulePage" class="container hidden">
+      <section class="card">
+        <h3>Reschedule Appointment</h3>
+
+        <label for="resId">Appointment ID</label>
+        <input id="resId" placeholder="Enter Appointment ID">
+
+        <label for="resDate">New Date</label>
+        <input type="date" id="resDate" onchange="renderRescheduleSlots()">
+
+        <label>New Time</label>
+        <input type="hidden" id="resTime">
+        <div id="resTimeSlots" class="time-slots">
           <p style="grid-column:1/-1;color:#777;">Please select date first</p>
         </div>
-      </div>
 
-      <div class="btn-row">
-        <button class="secondary" type="button" onclick="backStep1()">Back</button>
-        <button type="button" onclick="goReview()">Review</button>
-      </div>
-    </section>
-
-    <section id="step3" class="card hidden">
-      <h3>Review Appointment</h3>
-      <div id="reviewBox" class="review-box"></div>
-
-      <div class="btn-row">
-        <button class="secondary" type="button" onclick="backStep2()">Back</button>
-        <button id="submitBtn" class="success" type="button" onclick="submitAppointment()">Submit & Download PDF</button>
-      </div>
-    </section>
-
-    <section id="step4" class="card hidden">
-      <div class="success-box">
-        <h2>✅ Appointment Submitted</h2>
-        <p>Your Appointment ID:</p>
-        <h2 id="finalId"></h2>
-        <div class="inline-actions">
-          <button type="button" onclick="downloadPDF()">Download PDF Again</button>
-          <button class="secondary" type="button" onclick="goHome()">Go Home</button>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <div id="trackPage" class="container hidden">
-    <section class="card">
-      <h3>Track Appointment</h3>
-      <label for="trackId">Appointment ID</label>
-      <input id="trackId" placeholder="Enter Appointment ID, example TS-123456">
-      <button class="full" type="button" onclick="trackAppointment()">Search</button>
-      <div id="trackResult" style="margin-top:20px;"></div>
-      <button class="secondary full" type="button" onclick="goHome()">Back Home</button>
-    </section>
-  </div>
-
-  <div id="reschedulePage" class="container hidden">
-    <section class="card">
-      <h3>Reschedule Appointment</h3>
-
-      <label for="resId">Appointment ID</label>
-      <input id="resId" placeholder="Enter Appointment ID">
-
-      <label for="resDate">New Date</label>
-      <input type="date" id="resDate" onchange="renderRescheduleSlots()">
-
-      <label>New Time</label>
-      <input type="hidden" id="resTime">
-      <div id="resTimeSlots" class="time-slots">
-        <p style="grid-column:1/-1;color:#777;">Please select date first</p>
-      </div>
-
-      <button class="full" type="button" onclick="rescheduleAppointment()">Reschedule</button>
-      <button class="secondary full" type="button" onclick="goHome()">Back Home</button>
-      <div id="resResult" style="margin-top:20px;"></div>
-    </section>
+        <button class="full" type="button" onclick="rescheduleAppointment()">Reschedule</button>
+        <button class="secondary full" type="button" onclick="goHome()">Back Home</button>
+        <div id="resResult" style="margin-top:20px;"></div>
+      </section>
+    </div>
   </div>
 </main>
 
