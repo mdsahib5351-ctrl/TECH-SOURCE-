@@ -7,10 +7,9 @@
 <title>Result Checker | Tech Source</title>
 
 <link rel="icon" href="https://i.ibb.co/TBzgsbMS/TS-logo-with-vibrant-gradients.jpg">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-
-/* ===== RESET ===== */
 *{
   margin:0;
   padding:0;
@@ -18,105 +17,261 @@
   font-family:'Segoe UI',sans-serif;
 }
 
-/* ===== BODY ===== */
 body{
-  background:#f5f5f5;
-  color:#222;
+  min-height:100vh;
+  background:#f4f7fb;
+  color:#17202a;
 }
 
-/* ===== HEADER ===== */
 .header{
+  position:sticky;
+  top:0;
+  z-index:10;
   background:#fff;
   padding:15px 8%;
-  border-bottom:1px solid #ddd;
+  border-bottom:1px solid #dbe3ec;
   display:flex;
   justify-content:space-between;
   align-items:center;
+  box-shadow:0 8px 28px rgba(17,24,39,.06);
 }
 
 .logo{
-  font-weight:bold;
-  font-size:18px;
+  font-weight:800;
+  font-size:20px;
+  color:#0f766e;
 }
 
-/* ===== MAIN ===== */
+.home-link{
+  text-decoration:none;
+  color:#475569;
+  font-weight:700;
+}
+
+.hero{
+  padding:44px 8% 32px;
+  background:linear-gradient(135deg,#12343b,#0f766e 62%,#2563eb);
+  color:#fff;
+}
+
+.hero span{
+  display:block;
+  margin-bottom:8px;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  opacity:.82;
+}
+
+.hero h1{
+  max-width:760px;
+  font-size:clamp(30px,4vw,46px);
+  line-height:1.08;
+  margin-bottom:10px;
+}
+
+.hero p{
+  max-width:680px;
+  color:rgba(255,255,255,.82);
+  line-height:1.6;
+}
+
 .container{
-  max-width:400px;
-  margin:60px auto;
+  width:min(1120px,calc(100% - 32px));
+  margin:-26px auto 48px;
 }
 
-/* ===== CARD ===== */
-.card{
+.service-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+}
+
+.result-card{
   background:#fff;
-  padding:25px;
+  border:1px solid #dbe3ec;
   border-radius:10px;
-  border:1px solid #ddd;
+  padding:22px;
+  box-shadow:0 18px 45px rgba(17,24,39,.10);
+  cursor:pointer;
+  transition:.2s;
 }
 
-/* ===== TITLE ===== */
-h1{
-  text-align:center;
-  margin-bottom:20px;
+.result-card:hover{
+  transform:translateY(-4px);
+  border-color:rgba(15,118,110,.35);
+  box-shadow:0 24px 56px rgba(17,24,39,.14);
+}
+
+.result-card-head{
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  margin-bottom:18px;
+}
+
+.icon-box{
+  display:grid;
+  width:48px;
+  height:48px;
+  flex:0 0 48px;
+  place-items:center;
+  border-radius:10px;
+  background:#e7f7f4;
+  color:#0f766e;
+  font-size:21px;
+}
+
+.result-card h2{
+  margin-bottom:5px;
+  color:#12343b;
+  font-size:21px;
+}
+
+.result-card p{
+  color:#667085;
+  line-height:1.5;
+  font-size:14px;
+}
+
+.card-action{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-top:8px;
+  color:#0f766e;
+  font-weight:800;
+  font-size:14px;
+}
+
+.fullscreen-form{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:30;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(15,23,42,.64);
+}
+
+.fullscreen-form.active{
+  display:flex;
+}
+
+.form-panel{
+  width:min(480px,100%);
+  background:#fff;
+  border:1px solid #dbe3ec;
+  border-radius:10px;
+  box-shadow:0 24px 70px rgba(15,23,42,.28);
+  overflow:hidden;
+}
+
+.form-panel-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  padding:22px;
+  background:#12343b;
+  color:#fff;
+}
+
+.form-panel-head h2{
+  margin-bottom:5px;
   font-size:22px;
 }
 
-/* ===== INPUT ===== */
-.input input{
-  width:100%;
-  padding:12px;
-  margin:10px 0;
-  border:1px solid #ccc;
-  border-radius:6px;
-  font-size:15px;
+.form-panel-head p{
+  color:rgba(255,255,255,.78);
+  font-size:14px;
+  line-height:1.5;
 }
 
-.input input:focus{
-  border-color:#000;
-  outline:none;
-}
-
-/* ===== BUTTON ===== */
-.button{
-  width:100%;
-  padding:12px;
-  background:#000;
+.close-btn{
+  display:grid;
+  width:38px;
+  height:38px;
+  flex:0 0 38px;
+  place-items:center;
+  border:1px solid rgba(255,255,255,.24);
+  border-radius:8px;
+  background:rgba(255,255,255,.1);
   color:#fff;
-  border:none;
-  border-radius:6px;
-  font-size:15px;
   cursor:pointer;
 }
 
-.button:hover{
-  background:#333;
+.result-form{
+  display:grid;
+  gap:12px;
+  padding:22px;
 }
 
-/* ===== INFO ===== */
+.input-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+input{
+  width:100%;
+  padding:13px 14px;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  background:#fff;
+  color:#17202a;
+  outline:none;
+  font-size:15px;
+}
+
+input:focus{
+  border-color:#0f766e;
+  box-shadow:0 0 0 4px rgba(15,118,110,.12);
+}
+
+.button{
+  width:100%;
+  min-height:44px;
+  padding:12px 16px;
+  background:#0f766e;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  font-size:15px;
+  font-weight:800;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.button:hover{
+  background:#0b5d56;
+  transform:translateY(-1px);
+}
+
 .note{
   font-size:12px;
-  color:#666;
-  margin-top:10px;
+  color:#667085;
+  margin-top:4px;
   text-align:center;
 }
 
-/* ===== ERROR ===== */
 .error{
-  color:red;
+  min-height:18px;
+  color:#d92d20;
   font-size:13px;
-  margin-top:8px;
   text-align:center;
 }
 
-/* ===== LOADER ===== */
 .loader{
   display:none;
+  color:#0f766e;
   font-size:13px;
-  margin-top:10px;
+  font-weight:700;
   text-align:center;
 }
 
-/* ===== FOOTER ===== */
-/* ===== FOOTER ===== */
 .footer{
   margin-top:60px;
   padding:50px 8% 20px;
@@ -124,18 +279,16 @@ h1{
   border-top:1px solid #ddd;
 }
 
-/* GRID */
 .footer-container{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
   gap:30px;
 }
 
-/* BOX */
 .footer-box h3,
 .footer-box h4{
   margin-bottom:12px;
-  color:#000;
+  color:#12343b;
 }
 
 .footer-box p{
@@ -144,7 +297,6 @@ h1{
   line-height:1.6;
 }
 
-/* LINKS */
 .footer-box ul{
   list-style:none;
 }
@@ -161,11 +313,10 @@ h1{
 }
 
 .footer-box ul li a:hover{
-  color:#000;
+  color:#0f766e;
   padding-left:4px;
 }
 
-/* BOTTOM */
 .footer-bottom{
   text-align:center;
   margin-top:30px;
@@ -175,101 +326,167 @@ h1{
   color:#777;
 }
 
+@media(max-width:760px){
+  .header{
+    padding:14px 20px;
+  }
+
+  .hero{
+    padding:34px 20px 50px;
+  }
+
+  .container{
+    width:min(100% - 24px,1120px);
+    margin-top:-28px;
+  }
+
+  .service-grid,
+  .input-row{
+    grid-template-columns:1fr;
+  }
+}
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <div class="logo">Tech Source</div>
+  <a href="index.html" class="home-link">Home</a>
 </div>
 
-<!-- MAIN -->
-<div class="container">
+<section class="hero">
+  <span>Result Services</span>
+  <h1>Result Checker</h1>
+  <p>Select the result service, enter details as per admit card, and open the official result page.</p>
+</section>
 
-  <div class="card">
+<main class="container">
+  <div class="service-grid" id="serviceGrid"></div>
+</main>
 
-    <h1>Result Checker</h1>
-
-    <form onsubmit="checkResult(event)">
-
-      <div class="input">
-        <input type="text" id="rollcode" placeholder="Enter Roll Code">
-        <input type="number" id="rollnumber" placeholder="Enter Roll Number">
+<div class="fullscreen-form" id="resultFormScreen">
+  <div class="form-panel">
+    <div class="form-panel-head">
+      <div>
+        <h2 id="activeFormTitle">Result Check</h2>
+        <p id="activeFormDesc">Enter details as per admit card.</p>
       </div>
-
-      <button class="button">Submit</button>
-
-      <div class="loader" id="loader">Checking result...</div>
-      <div class="error" id="error"></div>
-
-    </form>
-
-    <div class="note">
-      Enter correct details as per admit card
+      <button class="close-btn" type="button" onclick="closeResultForm()" aria-label="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
 
-  </div>
+    <form class="result-form" onsubmit="checkResult(event)">
+      <div class="input-row">
+        <input type="text" id="rollcode" placeholder="Enter Roll Code" required>
+        <input type="number" id="rollnumber" placeholder="Enter Roll Number" required>
+      </div>
 
+      <button class="button" type="submit">Check Result</button>
+      <div class="loader" id="loader">Checking result...</div>
+      <div class="error" id="error"></div>
+      <div class="note">Enter correct details as per admit card</div>
+    </form>
+  </div>
 </div>
 
 <div class="footer">
-
   <div class="footer-container">
-
-    <!-- Brand -->
     <div class="footer-box">
       <h3>Tech Source</h3>
-      <p>
-        Fast & secure digital service platform. 
-        Result checking, document services and more.
-      </p>
+      <p>Fast and secure digital service platform. Result checking, document services and more.</p>
     </div>
 
-    <!-- Links -->
     <div class="footer-box">
       <h4>Quick Links</h4>
       <ul>
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Result</a></li>
-        <li><a href="#">Privacy Policy</a></li>
-        <li><a href="#">Contact</a></li>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="result.html">Result</a></li>
+        <li><a href="privacy.html">Privacy Policy</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
       </ul>
     </div>
 
-    <!-- Contact -->
     <div class="footer-box">
       <h4>Contact</h4>
       <p>Email: mdsahib5351@gmail.com</p>
     </div>
-
   </div>
 
   <div class="footer-bottom">
     © 2026 Tech Source | All Rights Reserved
   </div>
-
 </div>
 
 <script>
-
-// ===== LOAD SAVED =====
-window.onload = () => {
-  let saved = localStorage.getItem("rollcode");
-  if(saved){
-    document.getElementById("rollcode").value = saved;
+const resultServices = [
+  {
+    id: "marksheet",
+    title: "Marksheet Result Check",
+    description: "Matric marksheet result check ke liye roll code aur roll number enter karein.",
+    icon: "fa-file-lines",
+    storageKey: "marksheetRollCode",
+    url: ({ rollcode, rollnumber }) => `https://result.biharboardonline.org/result?roll_code=${rollcode}&roll_no=${rollnumber}`
+  },
+  {
+    id: "inter",
+    title: "Inter Result Check",
+    description: "Inter result check ke liye roll code aur roll number enter karein.",
+    icon: "fa-graduation-cap",
+    storageKey: "interRollCode",
+    url: ({ rollcode, rollnumber }) => `https://interbiharboard.com/result?roll_code=${rollcode}&roll_no=${rollnumber}`
   }
-};
+];
 
-// ===== RESULT CHECK =====
+let activeServiceId = resultServices[0].id;
+
+function renderResultCards(){
+  const grid = document.getElementById("serviceGrid");
+
+  grid.innerHTML = resultServices.map((service) => `
+    <div class="result-card" onclick="openResultForm('${service.id}')">
+      <div class="result-card-head">
+        <div class="icon-box"><i class="fa-solid ${service.icon}"></i></div>
+        <div>
+          <h2>${service.title}</h2>
+          <p>${service.description}</p>
+        </div>
+      </div>
+      <div class="card-action">Open Form <i class="fa-solid fa-arrow-right"></i></div>
+    </div>
+  `).join("");
+}
+
+function openResultForm(serviceId){
+  const service = resultServices.find((item) => item.id === serviceId);
+  if (!service) return;
+
+  activeServiceId = service.id;
+  document.getElementById("activeFormTitle").textContent = service.title;
+  document.getElementById("activeFormDesc").textContent = service.description;
+  document.getElementById("rollcode").value = localStorage.getItem(service.storageKey) || "";
+  document.getElementById("rollnumber").value = "";
+  document.getElementById("error").textContent = "";
+  document.getElementById("loader").style.display = "none";
+  document.getElementById("resultFormScreen").classList.add("active");
+  document.getElementById("rollcode").focus();
+}
+
+function closeResultForm(){
+  document.getElementById("resultFormScreen").classList.remove("active");
+}
+
 function checkResult(e){
   e.preventDefault();
 
-  let rollcode = document.getElementById("rollcode").value.trim();
-  let rollnumber = document.getElementById("rollnumber").value.trim();
-  let error = document.getElementById("error");
-  let loader = document.getElementById("loader");
+  const service = resultServices.find((item) => item.id === activeServiceId);
+  if (!service) return;
+
+  const rollcode = document.getElementById("rollcode").value.trim();
+  const rollnumber = document.getElementById("rollnumber").value.trim();
+  const error = document.getElementById("error");
+  const loader = document.getElementById("loader");
 
   error.textContent = "";
 
@@ -283,18 +500,21 @@ function checkResult(e){
     return;
   }
 
-  localStorage.setItem("rollcode", rollcode);
+  localStorage.setItem(service.storageKey, rollcode);
 
   loader.style.display = "block";
 
-  let url = `https://result.biharboardonline.org/result?roll_code=${rollcode}&roll_no=${rollnumber}`;
-
-  setTimeout(()=>{
+  setTimeout(() => {
     loader.style.display = "none";
-    window.open(url, "_blank");
-  },800);
+    window.open(service.url({ rollcode, rollnumber }), "_blank");
+  }, 800);
 }
 
+renderResultCards();
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeResultForm();
+});
 </script>
 
 </body>
