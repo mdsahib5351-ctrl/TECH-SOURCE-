@@ -40,10 +40,10 @@
     }
 
     header {
-      background: var(--primary);
+      background: linear-gradient(135deg, #12343b, #0b5ed7 68%, #0f8a4b);
       color: #fff;
-      padding: 18px 20px;
-      box-shadow: 0 6px 18px rgba(11, 94, 215, 0.18);
+      padding: 24px 20px 54px;
+      box-shadow: 0 14px 36px rgba(11, 94, 215, 0.18);
     }
 
     .header-inner {
@@ -85,7 +85,7 @@
 
     main {
       width: min(1120px, calc(100% - 32px));
-      margin: 24px auto 40px;
+      margin: -30px auto 40px;
     }
 
     .toolbar {
@@ -94,6 +94,11 @@
       gap: 10px;
       margin-bottom: 18px;
       align-items: end;
+      padding: 16px;
+      border: 1px solid #e7edf5;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: var(--shadow);
     }
 
     .field label {
@@ -159,7 +164,7 @@
     .panel {
       background: var(--panel);
       border: 1px solid #e7edf5;
-      border-radius: 8px;
+      border-radius: 10px;
       box-shadow: var(--shadow);
       overflow: hidden;
     }
@@ -224,8 +229,8 @@
 
     .summary-item {
       border: 1px solid #e6edf6;
-      border-radius: 8px;
-      padding: 12px;
+      border-radius: 10px;
+      padding: 14px;
       background: #fbfdff;
       min-width: 0;
     }
@@ -239,7 +244,7 @@
     }
 
     .summary-value {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
       overflow-wrap: anywhere;
     }
@@ -249,17 +254,19 @@
     }
 
     .section h3 {
-      margin-bottom: 10px;
-      font-size: 17px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #edf2f7;
+      font-size: 18px;
       color: #24324a;
     }
 
     .details-grid {
       display: grid;
-      grid-template-columns: 220px minmax(0, 1fr);
+      grid-template-columns: 240px minmax(0, 1fr);
       border: 1px solid #e6edf6;
       border-bottom: 0;
-      border-radius: 8px;
+      border-radius: 10px;
       overflow: hidden;
     }
 
@@ -280,6 +287,7 @@
       background: #fff;
       color: #172033;
       white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .doc-actions {
@@ -291,7 +299,7 @@
 
     .message {
       padding: 14px 16px;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid #e6edf6;
       background: #fff;
       color: #344054;
@@ -496,14 +504,12 @@
       return value === undefined || value === null || value === "" ? "-" : String(value);
     }
 
-    function maskAadhaar(value) {
-      const aadhaar = safe(value).replace(/\D/g, "");
-      return aadhaar.length >= 4 ? "XXXX XXXX " + aadhaar.slice(-4) : safe(value);
+    function fullAadhaar(value) {
+      return safe(value);
     }
 
-    function maskMobile(value) {
-      const mobile = safe(value).replace(/\D/g, "");
-      return mobile.length === 10 ? mobile.slice(0, 2) + "XXXXXX" + mobile.slice(-2) : safe(value);
+    function fullMobile(value) {
+      return safe(value);
     }
 
     function formatDate(value) {
@@ -563,8 +569,8 @@
       resetGrid(els.personalDetails);
       addRow(els.personalDetails, "Appointment ID", appointmentId);
       addRow(els.personalDetails, "Full Name", data.name);
-      addRow(els.personalDetails, "Mobile Number", maskMobile(data.mobile));
-      addRow(els.personalDetails, "Aadhaar Number", data.aadhaarMasked || maskAadhaar(data.aadhaar));
+      addRow(els.personalDetails, "Mobile Number", fullMobile(data.mobile));
+      addRow(els.personalDetails, "Aadhaar Number", fullAadhaar(data.aadhaar || data.aadhaarMasked));
 
       resetGrid(els.serviceDetails);
       addRow(els.serviceDetails, "Selected Service", data.service);
@@ -573,8 +579,8 @@
       if (data.relationType) addRow(els.serviceDetails, "Relation Type", data.relationType);
       if (data.coName) addRow(els.serviceDetails, "C/O Name", data.coName);
       if (data.coAddress) addRow(els.serviceDetails, "C/O Address", data.coAddress);
-      if (data.oldMobile) addRow(els.serviceDetails, "Old Mobile", maskMobile(data.oldMobile));
-      if (data.newMobile) addRow(els.serviceDetails, "New Mobile", maskMobile(data.newMobile));
+      if (data.oldMobile) addRow(els.serviceDetails, "Old Mobile", fullMobile(data.oldMobile));
+      if (data.newMobile) addRow(els.serviceDetails, "New Mobile", fullMobile(data.newMobile));
       if (data.docType) addRow(els.serviceDetails, "Document Type", data.docType);
       if (data.fileName) addRow(els.serviceDetails, "Uploaded File", data.fileName);
       if (data.docAddress) addRow(els.serviceDetails, "Document Address", data.docAddress);
