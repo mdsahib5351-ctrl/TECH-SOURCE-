@@ -240,6 +240,25 @@ background:var(--primary-dark);
 transform:translateY(-2px);
 }
 
+.back-btn{
+position:absolute;
+top:20px;
+left:20px;
+background:var(--primary);
+color:#fff;
+padding:10px 20px;
+border-radius:50%;
+cursor:pointer;
+}
+
+#download-bill .back-btn{
+position:static;
+display:inline-block;
+margin-top:15px;
+border:none;
+border-radius:40px;
+}
+
 /* ===============================
    SECTIONS
 ================================= */
@@ -257,9 +276,8 @@ margin-bottom:50px;
 color:var(--primary);
 font-weight:700;
 }
-
 /* ===============================
-   CARDS FINAL (GRID + ANIMATION)
+   CARDS FINAL (CLEAN + SMOOTH)
 ================================= */
 /* ===============================
    CARDS FINAL (CLEAN + SMOOTH)
