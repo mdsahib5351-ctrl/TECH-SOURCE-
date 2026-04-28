@@ -107,6 +107,17 @@ function openDownloadBill(){
   window.scrollTo({top:0, behavior:"smooth"});
 }
 
+function backdownloadBill(){
+  document.querySelectorAll("section").forEach(sec=>{
+    sec.style.display="block";
+  });
+
+  document.getElementById("download-bill").style.display="none";
+
+  // smooth scroll
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
 
 // ===============================
 // DOWNLOAD BILL FUNCTION
