@@ -40,9 +40,13 @@ function getSteps() {
   return isMinorApplicant ? minorSteps : adultSteps;
 }
 
+function redirectToLogin() {
+  window.location.href = "login.html?next=pan-service.html";
+}
+
 function openForm() {
   if (!currentUser) {
-    openAuthPopup("login");
+    redirectToLogin();
     return;
   }
 
@@ -139,6 +143,8 @@ function goPrevStep() {
 }
 
 function openAuthPopup(mode = "login") {
+  redirectToLogin();
+  return;
   authMode = mode;
   document.getElementById("authTitle").innerText = mode === "signup" ? "Create Account" : "Login";
   document.getElementById("authSubmitBtn").innerText = mode === "signup" ? "Create Account" : "Login";
@@ -186,6 +192,7 @@ async function handleAuthSubmit() {
         name,
         email,
         phone: "",
+        mobile: "",
         city: "",
         address: "",
         photoUrl: "",
@@ -226,6 +233,7 @@ async function getUserProfile(user) {
     name: user.displayName || "",
     email: user.email || "",
     phone: "",
+    mobile: "",
     city: "",
     address: "",
     photoUrl: user.photoURL || "",
@@ -266,7 +274,7 @@ function updateAuthUI() {
 
 function openProfilePopup() {
   if (!currentUser) {
-    openAuthPopup("login");
+    redirectToLogin();
     return;
   }
 
@@ -274,7 +282,7 @@ function openProfilePopup() {
   document.getElementById("profilePreview").src = avatar;
   document.getElementById("profileName").value = currentProfile.name || currentUser.displayName || "";
   document.getElementById("profileEmail").value = currentUser.email || "";
-  document.getElementById("profilePhone").value = currentProfile.phone || "";
+  document.getElementById("profilePhone").value = currentProfile.phone || currentProfile.mobile || "";
   document.getElementById("profileCity").value = currentProfile.city || "";
   document.getElementById("profileAddress").value = currentProfile.address || "";
   document.getElementById("profilePhoto").value = "";
@@ -288,7 +296,7 @@ function closeProfilePopup() {
 
 function openAccountPopup() {
   if (!currentUser) {
-    openAuthPopup("login");
+    redirectToLogin();
     return;
   }
 
@@ -310,6 +318,7 @@ async function saveProfile() {
     name: document.getElementById("profileName").value.trim(),
     email: currentUser.email,
     phone: document.getElementById("profilePhone").value.trim(),
+    mobile: document.getElementById("profilePhone").value.trim(),
     city: document.getElementById("profileCity").value.trim(),
     address: document.getElementById("profileAddress").value.trim(),
     updatedAt: new Date()
@@ -405,7 +414,7 @@ async function loadApplicationHistory() {
 
   if (!currentUser) {
     grid.innerHTML = '<div class="empty-history">Login karne ke baad history yahan show hogi.</div>';
-    openAuthPopup("login");
+    redirectToLogin();
     return;
   }
 
@@ -1004,10 +1013,10 @@ document.getElementById("postOffice").addEventListener("change", function () {
   }
 });
 
-document.getElementById("loginOpenBtn").addEventListener("click", () => openAuthPopup("login"));
-document.getElementById("authSubmitBtn").addEventListener("click", handleAuthSubmit);
-document.getElementById("authSwitchBtn").addEventListener("click", () => {
-  openAuthPopup(authMode === "login" ? "signup" : "login");
+document.getElementById("loginOpenBtn").addEventListener("click", redirectToLogin);
+document.getElementById("authSubmitBtn")?.addEventListener("click", handleAuthSubmit);
+document.getElementById("authSwitchBtn")?.addEventListener("click", () => {
+  redirectToLogin();
 });
 
 document.getElementById("profilePhoto").addEventListener("change", function () {
