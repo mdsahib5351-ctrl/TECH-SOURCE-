@@ -5,10 +5,12 @@
     <link rel="icon" href="https://i.ibb.co/TBzgsbMS/TS-logo-with-vibrant-gradients.jpg" type="image/jpeg">
     <title>TECH SOURCE - Login</title>
     <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <!-- JS -->
     <script src="script/login.js" defer></script>
@@ -51,8 +53,14 @@
             <form action="#">
                 <div class="field-wrapper slide-element">
                     <input type="text" id="registerUsername" required>
-                    <label for="">Username</label>
+                    <label for="">Full Name</label>
                     <i class="fa-solid fa-user"></i>
+                </div>
+
+                <div class="field-wrapper slide-element">
+                    <input type="tel" id="registerMobile" maxlength="10" required>
+                    <label for="">Mobile Number</label>
+                    <i class="fa-solid fa-phone"></i>
                 </div>
 
                 <div class="field-wrapper slide-element">
