@@ -28,6 +28,14 @@ const todayISO = () => {
   const day = String(now.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
+const maxAppointmentISO = () => {
+  const date = new Date();
+  date.setDate(date.getDate() + 15);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 const maskAadhaar = (value) => value ? `XXXX XXXX ${value.slice(-4)}` : "";
 const maskMobile = (value) => value ? `${value.slice(0,2)}XXXXXX${value.slice(-2)}` : "";
 
@@ -56,6 +64,9 @@ const els = {
   profilePageName: $("profilePageName"),
   profilePageEmail: $("profilePageEmail"),
   profilePageMobile: $("profilePageMobile"),
+  profilePageInitial: $("profilePageInitial"),
+  profileHeroName: $("profileHeroName"),
+  profileHeroEmail: $("profileHeroEmail"),
   homePage: $("homePage"),
   bookPage: $("bookPage"),
   trackPage: $("trackPage"),
@@ -95,6 +106,7 @@ const els = {
   submitBtn: $("submitBtn"),
   trackId: $("trackId"),
   trackResult: $("trackResult"),
+  resOwnAppointments: $("resOwnAppointments"),
   resId: $("resId"),
   resDate: $("resDate"),
   resTime: $("resTime"),
@@ -108,7 +120,9 @@ const slotList = [
 ];
 
 els.appointmentDate.min = todayISO();
+els.appointmentDate.max = maxAppointmentISO();
 els.resDate.min = todayISO();
+els.resDate.max = maxAppointmentISO();
 
 [els.mobileInput, els.aadhaarInput, els.oldMobile, els.newMobile, $("registerMobile")].forEach(input => {
   input.addEventListener("input", () => {
@@ -191,6 +205,9 @@ async function showLoggedIn(user){
   els.profilePageName.textContent = displayName;
   els.profilePageEmail.textContent = user.email;
   els.profilePageMobile.textContent = mobile || "-";
+  els.profilePageInitial.textContent = displayName.trim().charAt(0).toUpperCase() || "U";
+  els.profileHeroName.textContent = displayName;
+  els.profileHeroEmail.textContent = user.email;
   els.nameInput.value = displayName;
   els.mobileInput.value = mobile;
 
@@ -313,7 +330,18 @@ function renderReview(rows){
   rows.forEach(([label,value]) => addReviewRow(els.reviewBox, label, value));
 }
 
-function renderSlots(container, hiddenInput, selectedDate){
+async function getAvailabilityRule(selectedDate){
+  if(!selectedDate) return {};
+  try{
+    const doc = await db.collection("aadhaarAvailability").doc(selectedDate).get();
+    return doc.exists ? doc.data() : {};
+  }catch(error){
+    console.warn("Availability rule load failed", error);
+    return {};
+  }
+}
+
+async function renderSlots(container, hiddenInput, selectedDate){
   hiddenInput.value = "";
   container.innerHTML = "";
 
@@ -321,6 +349,18 @@ function renderSlots(container, hiddenInput, selectedDate){
     container.innerHTML = `<p style="grid-column:1/-1;color:#777;">Please select date first</p>`;
     return;
   }
+
+  container.innerHTML = `<p style="grid-column:1/-1;color:#777;">Checking availability...</p>`;
+
+  const availability = await getAvailabilityRule(selectedDate);
+  const blockedSlots = Array.isArray(availability.blockedSlots) ? availability.blockedSlots : [];
+
+  if(availability.holiday){
+    container.innerHTML = `<p style="grid-column:1/-1;color:#c62828;">Is date par holiday hai. ${availability.note || "Please another date select karo."}</p>`;
+    return;
+  }
+
+  container.innerHTML = "";
 
   const isToday = selectedDate === todayISO();
   const now = new Date();
@@ -331,11 +371,11 @@ function renderSlots(container, hiddenInput, selectedDate){
     div.className = "time-slot";
     div.textContent = slot;
 
-    const disabled = isToday && isSlotPassed(slot, now);
+    const disabled = (isToday && isSlotPassed(slot, now)) || blockedSlots.includes(slot);
     if(disabled){
       div.classList.add("disabled");
       div.disabled = true;
-      div.title = "This slot has already passed";
+      div.title = blockedSlots.includes(slot) ? "Admin unavailable for this slot" : "This slot has already passed";
     }
 
     div.onclick = () => {
@@ -348,7 +388,7 @@ function renderSlots(container, hiddenInput, selectedDate){
   });
 
   if(!container.querySelector(".time-slot:not(.disabled)")){
-    container.innerHTML = `<p style="grid-column:1/-1;color:#777;">Aaj ke slots khatam ho gaye. Please another date select karo.</p>`;
+    container.innerHTML = `<p style="grid-column:1/-1;color:#777;">Is date par koi slot available nahi hai. Please another date select karo.</p>`;
   }
 }
 
@@ -429,9 +469,12 @@ window.openReschedule = function(){
   if(!requireLogin()) return;
   hideAll();
   els.resResult.innerHTML = "";
+  els.resId.value = "";
+  els.resDate.value = "";
   els.resTime.value = "";
   renderSlots(els.resTimeSlots, els.resTime, els.resDate.value);
   els.reschedulePage.classList.remove("hidden");
+  loadUserAppointmentsForReschedule();
 };
 
 window.showOnlyStep = function(n){
@@ -488,6 +531,7 @@ window.backStep2 = function(){ showOnlyStep(2); };
 window.goReview = function(){
   if(!els.appointmentDate.value) return alert("Appointment date select karo");
   if(els.appointmentDate.value < todayISO()) return alert("Past date allowed nahi hai");
+  if(els.appointmentDate.value > maxAppointmentISO()) return alert("Appointment maximum 15 din ke andar book ho sakta hai");
   if(!els.appointmentTime.value) return alert("Appointment time select karo");
 
   const extra = getServiceExtraData();
@@ -663,9 +707,10 @@ window.rescheduleAppointment = async function(){
   try{
     if(!requireLogin()) return;
     const id = els.resId.value.trim().toUpperCase();
-    if(!id) return alert("Appointment ID enter karo");
+    if(!id) return alert("Apna appointment select karo");
     if(!els.resDate.value) return alert("New date select karo");
     if(els.resDate.value < todayISO()) return alert("Past date allowed nahi hai");
+    if(els.resDate.value > maxAppointmentISO()) return alert("Appointment maximum 15 din ke andar reschedule ho sakta hai");
     if(!els.resTime.value) return alert("New time select karo");
 
     showMessage(els.resResult, "Loading...", "warn");
@@ -681,6 +726,13 @@ window.rescheduleAppointment = async function(){
     }
 
     const docSnap = snap.docs[0];
+    const data = docSnap.data();
+
+    if(data.userId !== state.currentUser.uid){
+      showMessage(els.resResult, "Permission denied. Ye appointment aapke login account ka nahi hai.", "error");
+      return;
+    }
+
     await db.collection("appointments").doc(docSnap.id).update({
       appointmentDate: els.resDate.value,
       appointmentTime: els.resTime.value,
@@ -706,4 +758,41 @@ window.renderTimeSlots = function(){
 
 window.renderRescheduleSlots = function(){
   renderSlots(els.resTimeSlots, els.resTime, els.resDate.value);
+};
+
+window.loadUserAppointmentsForReschedule = async function(){
+  if(!requireLogin()) return;
+
+  els.resOwnAppointments.innerHTML = `<option value="">Loading your appointments...</option>`;
+
+  try{
+    const snap = await db.collection("appointments")
+      .where("userId", "==", state.currentUser.uid)
+      .get();
+
+    if(snap.empty){
+      els.resOwnAppointments.innerHTML = `<option value="">No appointment found in your account</option>`;
+      return;
+    }
+
+    const appointments = snap.docs
+      .map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
+      .sort((a, b) => String(b.appointmentDate || "").localeCompare(String(a.appointmentDate || "")));
+
+    els.resOwnAppointments.innerHTML = `<option value="">Select your appointment</option>`;
+    appointments.forEach(app => {
+      const option = document.createElement("option");
+      option.value = app.appointmentId || "";
+      option.textContent = `${app.appointmentId || "No ID"} - ${app.service || "Service"} - ${app.appointmentDate || "No date"} ${app.appointmentTime || ""}`;
+      els.resOwnAppointments.appendChild(option);
+    });
+  }catch(error){
+    els.resOwnAppointments.innerHTML = `<option value="">Unable to load appointments</option>`;
+    showMessage(els.resResult, `Firebase Error: ${error.message}`, "error");
+  }
+};
+
+window.selectRescheduleAppointment = function(){
+  els.resId.value = els.resOwnAppointments.value || "";
+  els.resResult.innerHTML = "";
 };
