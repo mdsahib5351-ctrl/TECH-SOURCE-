@@ -18,6 +18,16 @@ let currentProfile = {};
 let authMode = "login";
 let currentStepIndex = 0;
 let isMinorApplicant = false;
+let draftSaveTimer = null;
+
+const draftFieldIds = [
+  "lastName", "firstName", "middleName", "aadhar", "nameAadhar", "dob", "gender",
+  "phone", "email", "fatherlastName", "fatherFirstName", "fatherMiddleName",
+  "motherlastName", "motherfirstName", "motherMiddleName", "guardianlastName",
+  "guardianfirstName", "guardianMiddleName", "pinCode", "flatNo", "villageCity",
+  "postOffice", "manualPO", "subDivision", "district", "state", "proofOfIdentity",
+  "proofOfAddress", "proof_dob"
+];
 
 const adultSteps = [
   { id: "basic", label: "Basic Detail" },
@@ -58,10 +68,12 @@ function openForm() {
   screen.style.display = "block";
   screen.classList.add("is-open");
   screen.setAttribute("aria-hidden", "false");
+  loadDraft();
   renderSteps();
 }
 
 function closeForm() {
+  saveDraft();
   const screen = document.getElementById("formScreen");
   screen.style.display = "none";
   screen.classList.remove("is-open");
@@ -135,11 +147,13 @@ function goNextStep() {
   if (!validateCurrentStep()) return;
   currentStepIndex++;
   renderSteps();
+  saveDraft(true);
 }
 
 function goPrevStep() {
   currentStepIndex--;
   renderSteps();
+  saveDraft(true);
 }
 
 function openAuthPopup(mode = "login") {
@@ -362,6 +376,101 @@ function formatDate(value) {
   });
 }
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function jsArg(value) {
+  return escapeHtml(JSON.stringify(String(value ?? "")));
+}
+
+function showToast(message, type = "success") {
+  let stack = document.getElementById("toastStack");
+
+  if (!stack) {
+    stack = document.createElement("div");
+    stack.id = "toastStack";
+    stack.className = "toast-stack";
+    document.body.appendChild(stack);
+  }
+
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<i class="fa ${type === "error" ? "fa-circle-exclamation" : "fa-circle-check"}"></i><span>${escapeHtml(message)}</span>`;
+  stack.appendChild(toast);
+
+  setTimeout(() => toast.classList.add("is-visible"), 20);
+  setTimeout(() => {
+    toast.classList.remove("is-visible");
+    setTimeout(() => toast.remove(), 220);
+  }, 2600);
+}
+
+function getDraftKey() {
+  const owner = currentUser?.uid || currentUser?.email || "guest";
+  return `panFormDraft:${owner}`;
+}
+
+function collectDraftData() {
+  const data = {};
+
+  draftFieldIds.forEach((id) => {
+    const field = document.getElementById(id);
+    if (!field) return;
+    data[id] = field.value;
+  });
+
+  return {
+    values: data,
+    currentStepIndex,
+    isMinorApplicant,
+    savedAt: Date.now()
+  };
+}
+
+function saveDraft(silent = true) {
+  if (!currentUser) return;
+  localStorage.setItem(getDraftKey(), JSON.stringify(collectDraftData()));
+  if (!silent) showToast("Draft saved");
+}
+
+function clearDraft() {
+  if (!currentUser) return;
+  localStorage.removeItem(getDraftKey());
+}
+
+function scheduleDraftSave() {
+  clearTimeout(draftSaveTimer);
+  draftSaveTimer = setTimeout(() => saveDraft(true), 500);
+}
+
+function loadDraft() {
+  if (!currentUser) return;
+
+  const raw = localStorage.getItem(getDraftKey());
+  if (!raw) return;
+
+  try {
+    const draft = JSON.parse(raw);
+    Object.entries(draft.values || {}).forEach(([id, value]) => {
+      const field = document.getElementById(id);
+      if (field && field.type !== "file") field.value = value || "";
+    });
+
+    isMinorApplicant = Boolean(draft.isMinorApplicant);
+    currentStepIndex = Number.isInteger(draft.currentStepIndex) ? draft.currentStepIndex : 0;
+    updateAadhaarName();
+    showToast("Saved draft restored");
+  } catch (err) {
+    localStorage.removeItem(getDraftKey());
+  }
+}
+
 function getStatusClass(status) {
   const normalized = (status || "pending").toLowerCase();
   if (normalized === "approved") return "approved";
@@ -370,9 +479,95 @@ function getStatusClass(status) {
   return "pending";
 }
 
+function getPaymentInfo(paymentStatus) {
+  const paid = paymentStatus === "paid";
+  return {
+    text: paid ? "Paid" : "Pending",
+    className: paid ? "paid" : "pending"
+  };
+}
+
+function getTimelineSteps(data) {
+  const paymentPaid = data.paymentStatus === "paid";
+  const status = (data.status || "pending").toLowerCase();
+  const approved = status === "approved";
+  const rejected = status === "rejected";
+  const underProcess = status === "under process" || approved || rejected;
+
+  return [
+    { label: "Submitted", state: "done" },
+    { label: paymentPaid ? "Payment Paid" : "Payment Pending", state: paymentPaid ? "done" : "active" },
+    { label: "Under Process", state: underProcess ? "done" : "pending" },
+    {
+      label: rejected ? "Rejected" : approved ? "Approved" : "Final Status",
+      state: rejected ? "rejected" : approved ? "done" : "pending"
+    }
+  ];
+}
+
+function renderTimeline(data) {
+  return `
+    <div class="status-timeline">
+      ${getTimelineSteps(data).map((step) => `
+        <div class="timeline-step ${step.state}">
+          <span></span>
+          <strong>${escapeHtml(step.label)}</strong>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderStatusDetails(data) {
+  const status = data.status || "pending";
+  const payment = getPaymentInfo(data.paymentStatus);
+  const remark = data.remark && data.remark.trim() !== "" ? data.remark : "No remark";
+
+  return `
+    <div class="status-panel">
+      <div class="status-panel-head">
+        <div>
+          <span class="history-label">Application Status</span>
+          <h4>${escapeHtml(data.name || "PAN Application")}</h4>
+          <p>${escapeHtml(data.ackNo || "N/A")}</p>
+        </div>
+        <span class="status-badge ${getStatusClass(status)}">${escapeHtml(status)}</span>
+      </div>
+      ${renderTimeline(data)}
+      <div class="status-list">
+        <div class="status-row">
+          <small>Payment</small>
+          <strong><span class="payment-badge ${payment.className === "paid" ? "paid" : ""}">${payment.text}</span></strong>
+        </div>
+        <div class="status-row">
+          <small>Applied On</small>
+          <strong>${escapeHtml(formatDate(data.createdAt))}</strong>
+        </div>
+        <div class="status-row">
+          <small>Applicant Type</small>
+          <strong>${data.isMinor ? "Minor PAN" : "PAN"}</strong>
+        </div>
+        <div class="status-row status-row-wide">
+          <small>Remark</small>
+          <strong>${escapeHtml(remark)}</strong>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function copyAck(ackNo) {
+  if (!ackNo) return;
+  navigator.clipboard.writeText(ackNo)
+    .then(() => showToast("ACK copied: " + ackNo))
+    .catch(() => {
+      prompt("Copy ACK No:", ackNo);
+    });
+}
+
 function showHistoryStatus(ackNo) {
   closeAccountPopup();
-  document.getElementById("trackDetails").innerHTML = "Loading...";
+  document.getElementById("trackDetails").innerHTML = '<div class="status-panel">Loading...</div>';
   openPopup("trackPopup");
 
   db.collection("applications")
@@ -385,15 +580,13 @@ function showHistoryStatus(ackNo) {
       }
 
       const data = snapshot.docs[0].data();
-      const status = data.status || "pending";
-      const remark = data.remark && data.remark.trim() !== "" ? data.remark : "No remark";
-      document.getElementById("trackDetails").innerHTML = `
-        <b>ACK:</b> ${data.ackNo}<br>
-        <b>Name:</b> ${data.name}<br>
-        <b>Status:</b> ${status}<br>
-        <b>Payment:</b> ${data.paymentStatus === "paid" ? "Paid" : "Pending"}<br>
-        <b>Remark:</b> ${remark}
-      `;
+      const payBtn = document.getElementById("payBtn");
+      document.getElementById("trackDetails").innerHTML = renderStatusDetails(data);
+
+      payBtn.style.display = data.paymentStatus === "paid" ? "none" : "block";
+      payBtn.onclick = function () {
+        window.location.href = "payment.html?ack=" + data.ackNo;
+      };
     })
     .catch((err) => {
       document.getElementById("trackDetails").innerHTML = "Error: " + err.message;
@@ -433,7 +626,16 @@ async function loadApplicationHistory() {
     emailSnapshot.forEach((doc) => appMap.set(doc.id, { id: doc.id, ...doc.data() }));
 
     if (appMap.size === 0) {
-      grid.innerHTML = '<div class="empty-history">Abhi tak is account se koi PAN apply nahi hua.</div>';
+      grid.innerHTML = `
+        <div class="empty-history">
+          <div class="empty-history-content">
+            <i class="fa fa-folder-open"></i>
+            <h3>No PAN history yet</h3>
+            <p>Abhi tak is account se koi PAN apply nahi hua.</p>
+            <button class="btn" type="button" onclick="closeAccountPopup(); openForm();">Apply New PAN</button>
+          </div>
+        </div>
+      `;
       return;
     }
 
@@ -446,29 +648,33 @@ async function loadApplicationHistory() {
 
     grid.innerHTML = apps.map((app) => {
       const status = app.status || "pending";
-      const payment = app.paymentStatus === "paid" ? "Paid" : "Pending";
-      const paymentClass = app.paymentStatus === "paid" ? "paid" : "";
+      const payment = getPaymentInfo(app.paymentStatus);
+      const ackNo = app.ackNo || "";
+      const applicantName = app.name || "PAN Application";
+      const appliedDate = formatDate(app.createdAt);
+      const pendingPayment = app.paymentStatus !== "paid";
       return `
-        <article class="history-card">
+        <article class="history-card ${pendingPayment ? "payment-pending-card" : ""}">
           <div class="history-card-head">
             <div>
-              <h3>${app.name || "PAN Application"}</h3>
-              <p class="ack-line">${app.ackNo || "N/A"}</p>
+              <span class="history-label">Applicant</span>
+              <h3>${escapeHtml(applicantName)}</h3>
+              <p class="ack-line">ACK: ${escapeHtml(ackNo || "N/A")}</p>
             </div>
-            <span class="status-badge ${getStatusClass(status)}">${status}</span>
+            <span class="status-badge ${getStatusClass(status)}">${escapeHtml(status)}</span>
           </div>
           <div class="history-details">
             <div class="history-detail">
               <small>DOB</small>
-              <strong>${app.dob || "N/A"}</strong>
+              <strong>${escapeHtml(app.dob || "N/A")}</strong>
             </div>
             <div class="history-detail">
               <small>Applied</small>
-              <strong>${formatDate(app.createdAt)}</strong>
+              <strong>${escapeHtml(appliedDate)}</strong>
             </div>
             <div class="history-detail">
               <small>Payment</small>
-              <strong><span class="payment-badge ${paymentClass}">${payment}</span></strong>
+              <strong><span class="payment-badge ${payment.className === "paid" ? "paid" : ""}">${payment.text}</span></strong>
             </div>
             <div class="history-detail">
               <small>Type</small>
@@ -476,8 +682,10 @@ async function loadApplicationHistory() {
             </div>
           </div>
           <div class="history-actions">
-            <button class="mini-btn" type="button" onclick="showHistoryStatus('${app.ackNo || ""}')">Status</button>
-            <button class="mini-btn primary" type="button" onclick="goHistoryPayment('${app.ackNo || ""}', '${app.paymentStatus || ""}')">${app.paymentStatus === "paid" ? "View" : "Pay"}</button>
+            <button class="mini-btn" type="button" onclick="copyAck(${jsArg(ackNo)})"><i class="fa fa-copy"></i> Copy ACK</button>
+            <button class="mini-btn" type="button" onclick="downloadHistoryReceipt(${jsArg(ackNo)})"><i class="fa fa-file-pdf"></i> Receipt</button>
+            <button class="mini-btn" type="button" onclick="showHistoryStatus(${jsArg(ackNo)})"><i class="fa fa-circle-info"></i> Status</button>
+            <button class="mini-btn ${pendingPayment ? "warn" : "primary"}" type="button" onclick="goHistoryPayment(${jsArg(ackNo)}, ${jsArg(app.paymentStatus || "")})"><i class="fa ${app.paymentStatus === "paid" ? "fa-eye" : "fa-credit-card"}"></i> ${app.paymentStatus === "paid" ? "View" : "Pay Now"}</button>
           </div>
         </article>
       `;
@@ -643,13 +851,15 @@ document.getElementById("newpanForm").addEventListener("submit", async function 
 
     await db.collection("applications").add(formData);
     generatePDF(formData);
+    clearDraft();
+    showToast("Application submitted");
 
     setTimeout(() => {
       localStorage.setItem("ackNo", ackNo);
       window.location.href = "payment.html?ack=" + ackNo;
     }, 1500);
   } catch (err) {
-    alert("Error: " + err);
+    showToast("Error: " + err, "error");
   } finally {
     loading.style.display = "none";
     submitBtn.disabled = false;
@@ -667,70 +877,67 @@ function generateAck() {
 }
 
 function trackstatus() {
-  let ack = prompt("अपना Ack No डालें:");
-  if (!ack) return;
+  document.getElementById("trackAckInput").value = "";
+  document.getElementById("trackDetails").innerHTML = "";
+  document.getElementById("payBtn").style.display = "none";
+  document.getElementById("trackSubmitBtn").disabled = false;
+  document.getElementById("trackSubmitBtn").innerText = "Check Status";
+  openPopup("trackPopup");
+  setTimeout(() => document.getElementById("trackAckInput").focus(), 50);
+}
 
-  ack = ack.trim().toUpperCase();
+function submitTrackStatus() {
+  let ack = document.getElementById("trackAckInput").value.trim().toUpperCase();
+  const details = document.getElementById("trackDetails");
+  const submitBtn = document.getElementById("trackSubmitBtn");
+  const payBtn = document.getElementById("payBtn");
+
+  if (!ack) {
+    details.innerHTML = '<div class="track-message error">Please enter ACK number.</div>';
+    return;
+  }
+
+  details.innerHTML = '<div class="track-message">Checking status...</div>';
+  payBtn.style.display = "none";
+  submitBtn.disabled = true;
+  submitBtn.innerText = "Checking...";
 
   db.collection("applications")
     .where("ackNo", "==", ack)
     .get()
     .then((snapshot) => {
       if (snapshot.empty) {
-        alert("Record नहीं मिला");
+        details.innerHTML = '<div class="track-message error">Record not found. ACK number check karein.</div>';
         return;
       }
 
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const payBtn = document.getElementById("payBtn");
-        let html = "";
+      const data = snapshot.docs[0].data();
 
-        if (data.paymentStatus !== "paid") {
-          html = `
-            <b>ACK:</b> ${data.ackNo}<br>
-            <b>Name:</b> ${data.name}<br><br>
-            <span class="status-link" onclick="window.location.href='payment.html?ack=${data.ackNo}'">
-              Payment Pending - Click here to complete payment
-            </span>
-          `;
+      if (data.paymentStatus !== "paid") {
+        payBtn.style.display = "block";
+        payBtn.onclick = function () {
+          window.location.href = "payment.html?ack=" + data.ackNo;
+        };
+      } else {
+        payBtn.style.display = "none";
+      }
 
-          payBtn.style.display = "block";
-          payBtn.onclick = function () {
-            window.location.href = "payment.html?ack=" + data.ackNo;
-          };
-        } else {
-          const status =
-            data.status === "approved" ? "Approved" :
-              data.status === "under process" ? "Under process" :
-                data.status === "rejected" ? "Rejected" :
-                  "Pending";
-
-          const remark = data.remark && data.remark.trim() !== ""
-            ? data.remark
-            : "No remark";
-
-          html = `
-            <b>ACK:</b> ${data.ackNo}<br>
-            <b>Name:</b> ${data.name}<br>
-            <b>Status:</b> ${status}<br>
-            <b>Remark:</b> ${remark}
-          `;
-
-          payBtn.style.display = "none";
-        }
-
-        document.getElementById("trackDetails").innerHTML = html;
-        openPopup("trackPopup");
-      });
+      details.innerHTML = renderStatusDetails(data);
     })
     .catch((err) => {
-      alert("Error: " + err.message);
+      details.innerHTML = '<div class="track-message error">Error: ' + escapeHtml(err.message) + '</div>';
+    })
+    .finally(() => {
+      submitBtn.disabled = false;
+      submitBtn.innerText = "Check Status";
     });
 }
 
 function closeTrackPopup() {
   closePopup("trackPopup");
+  document.getElementById("trackAckInput").value = "";
+  document.getElementById("trackDetails").innerHTML = "";
+  document.getElementById("payBtn").style.display = "none";
 }
 
 function checkAge() {
@@ -783,6 +990,143 @@ function generatePDF(data) {
   doc.text("Fee Paid: Rs. 190", 20, 130);
   doc.text("Thank you for applying!", 20, 150);
   doc.save(`PAN_ACK_${data.ackNo}.pdf`);
+}
+
+function downloadReceiptPdf(data) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const payment = getPaymentInfo(data.paymentStatus);
+  const status = data.status || "pending";
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 16;
+  const contentWidth = pageWidth - margin * 2;
+  const brand = [15, 118, 110];
+  const dark = [18, 52, 59];
+  const muted = [102, 112, 133];
+  const line = [216, 224, 234];
+
+  function money(value) {
+    return "Rs. " + value;
+  }
+
+  function drawBadge(text, x, y, color) {
+    const width = Math.max(28, doc.getTextWidth(text) + 12);
+    doc.setFillColor(color[0], color[1], color[2]);
+    doc.roundedRect(x, y - 5, width, 9, 4, 4, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text(text, x + 6, y + 1);
+    return width;
+  }
+
+  function sectionTitle(title, y) {
+    doc.setTextColor(dark[0], dark[1], dark[2]);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text(title, margin, y);
+    doc.setDrawColor(line[0], line[1], line[2]);
+    doc.line(margin, y + 4, pageWidth - margin, y + 4);
+  }
+
+  function infoRow(label, value, x, y, width) {
+    doc.setTextColor(muted[0], muted[1], muted[2]);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text(label.toUpperCase(), x, y);
+    doc.setTextColor(23, 32, 42);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    const lines = doc.splitTextToSize(String(value || "N/A"), width);
+    doc.text(lines, x, y + 6);
+  }
+
+  doc.setFillColor(238, 243, 248);
+  doc.rect(0, 0, pageWidth, 297, "F");
+
+  doc.setFillColor(dark[0], dark[1], dark[2]);
+  doc.roundedRect(margin, 14, contentWidth, 38, 4, 4, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  doc.text("TECH SOURCE", margin + 12, 29);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text("PAN Card Service Receipt", margin + 12, 39);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("ACK RECEIPT", pageWidth - margin - 42, 29);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text(formatDate(new Date()), pageWidth - margin - 42, 39);
+
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(margin, 60, contentWidth, 35, 4, 4, "F");
+  doc.setDrawColor(line[0], line[1], line[2]);
+  doc.roundedRect(margin, 60, contentWidth, 35, 4, 4, "S");
+  infoRow("Ack Number", data.ackNo || "N/A", margin + 10, 73, 64);
+  infoRow("Applicant", data.name || "PAN Application", margin + 78, 73, 56);
+  infoRow("Applied On", formatDate(data.createdAt), margin + 138, 73, 32);
+  drawBadge(payment.text, pageWidth - margin - 42, 75, payment.className === "paid" ? [22, 101, 52] : [249, 115, 22]);
+
+  sectionTitle("Applicant Details", 112);
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(margin, 122, contentWidth, 52, 4, 4, "F");
+  doc.setDrawColor(line[0], line[1], line[2]);
+  doc.roundedRect(margin, 122, contentWidth, 52, 4, 4, "S");
+  infoRow("Name", data.name || "N/A", margin + 10, 136, 78);
+  infoRow("DOB", data.dob || "N/A", margin + 102, 136, 34);
+  infoRow("Type", data.isMinor ? "Minor PAN" : "PAN", margin + 150, 136, 34);
+  infoRow("Phone", data.phone || "N/A", margin + 10, 158, 54);
+  infoRow("Email", data.email || "N/A", margin + 78, 158, 96);
+
+  sectionTitle("Application Summary", 190);
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(margin, 200, contentWidth, 45, 4, 4, "F");
+  doc.setDrawColor(line[0], line[1], line[2]);
+  doc.roundedRect(margin, 200, contentWidth, 45, 4, 4, "S");
+  infoRow("Status", status, margin + 10, 214, 46);
+  infoRow("Payment", payment.text, margin + 72, 214, 34);
+  infoRow("Service Fee", money(190), margin + 120, 214, 34);
+  infoRow("Remark", data.remark || "No remark", margin + 10, 234, 160);
+
+  if (data.guardianName) {
+    infoRow("Guardian", data.guardianName, margin + 120, 234, 54);
+  }
+
+  doc.setFillColor(231, 247, 244);
+  doc.roundedRect(margin, 258, contentWidth, 16, 4, 4, "F");
+  doc.setTextColor(11, 93, 86);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("Keep this receipt for future status checks and payment reference.", margin + 10, 268);
+
+  doc.setTextColor(muted[0], muted[1], muted[2]);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text("Generated by TECH SOURCE PAN Card Service", margin, 286);
+  doc.text("This is a system generated receipt.", pageWidth - margin - 52, 286);
+  doc.save(`PAN_RECEIPT_${data.ackNo || "APPLICATION"}.pdf`);
+}
+
+function downloadHistoryReceipt(ackNo) {
+  if (!ackNo) return;
+
+  db.collection("applications")
+    .where("ackNo", "==", ackNo)
+    .get()
+    .then((snapshot) => {
+      if (snapshot.empty) {
+        showToast("Record not found", "error");
+        return;
+      }
+
+      downloadReceiptPdf(snapshot.docs[0].data());
+      showToast("Receipt downloaded");
+    })
+    .catch((err) => {
+      showToast("Receipt download failed: " + err.message, "error");
+    });
 }
 
 async function getPan() {
@@ -993,12 +1337,12 @@ async function fetchAddress() {
       select.appendChild(manualOption);
     } else {
       select.innerHTML = "<option>No Post Office Found</option>";
-      alert("Invalid PIN Code");
+      showToast("Invalid PIN Code", "error");
     }
   } catch (err) {
     console.error(err);
     select.innerHTML = "<option>Error loading</option>";
-    alert("Error fetching address");
+    showToast("Error fetching address", "error");
   }
 }
 
@@ -1013,10 +1357,29 @@ document.getElementById("postOffice").addEventListener("change", function () {
   }
 });
 
+document.querySelectorAll("#newpanForm input, #newpanForm select").forEach((field) => {
+  if (field.type === "file") {
+    field.addEventListener("change", () => {
+      showToast("Documents selected. Files are not saved in draft.");
+    });
+    return;
+  }
+
+  field.addEventListener("input", scheduleDraftSave);
+  field.addEventListener("change", scheduleDraftSave);
+});
+
 document.getElementById("loginOpenBtn").addEventListener("click", redirectToLogin);
 document.getElementById("authSubmitBtn")?.addEventListener("click", handleAuthSubmit);
 document.getElementById("authSwitchBtn")?.addEventListener("click", () => {
   redirectToLogin();
+});
+
+document.getElementById("trackAckInput")?.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    submitTrackStatus();
+  }
 });
 
 document.getElementById("profilePhoto").addEventListener("change", function () {
