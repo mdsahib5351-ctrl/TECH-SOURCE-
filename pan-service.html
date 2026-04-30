@@ -516,9 +516,16 @@
   <div id="trackPopup" class="popup" aria-hidden="true">
     <div class="popup-box">
       <h3>Application Status</h3>
-      <p id="trackDetails" class="message"></p>
+      <div class="form-group track-search">
+        <label for="trackAckInput">ACK Number</label>
+        <input type="text" id="trackAckInput" placeholder="Enter ACK No">
+      </div>
+      <div class="popup-actions track-actions">
+        <button class="btn ghost" onclick="closeTrackPopup()" type="button">Close</button>
+        <button class="btn" onclick="submitTrackStatus()" type="button" id="trackSubmitBtn">Check Status</button>
+      </div>
+      <div id="trackDetails" class="message"></div>
       <button id="payBtn" class="btn pay" type="button">Pay Now</button>
-      <button class="btn ghost" onclick="closeTrackPopup()" type="button">Close</button>
     </div>
   </div>
 </body>
